@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+*.log
+.vscode/
+.idea/
+.DS_Store
+.cache/
+package-lock.json
+pnpm-lock.yaml
+/.turbo

@@ -1,0 +1,61 @@
+TASK LIST: Convert project to full-stack with MongoDB backend
+
+1) Backend - Core
+- Create Express server that connects to MongoDB (Mongoose)
+- Add environment config (.env) with MONGODB_URI, DB_NAME, JWT_SECRET, PORT
+- Implement authentication routes: /api/auth/signup, /api/auth/login
+- Issue JWT tokens on signup/login (stateless auth)
+- Implement links CRUD routes: /api/links (GET public/sample, GET user, POST create, DELETE)
+- Protect routes with middleware that validates JWT
+
+2) Backend - Models
+- User schema: name, email (unique), passwordHash, avatar, theme, createdAt
+- Link schema: userId (ref User), title, url, order, visible, createdAt
+
+3) Frontend - Routing & Pages
+- Add React Router to the front-end
+- Create pages: Landing (public sample profile), Login, Signup, Dashboard (user links), Profile (user settings, theme), Link editor
+- Update `index.html` and `src/main.jsx` to use BrowserRouter
+- Update `src/App.jsx` to include Routes and navigate without full reload
+
+4) Frontend - Auth & API
+- Add `src/api/client.js` to centralize API base URL and auth header handling
+- Implement login/signup forms that call `/api/auth` endpoints and store JWT in localStorage
+- Add logout functionality that clears auth and redirects to landing
+- Protect dashboard/profile routes: if no token, redirect to login
+
+5) Frontend - Links
+- Create UI to list, add, delete user's links calling `/api/links` endpoints
+- On landing (public access), show sample profile/links when no user is specified
+
+6) Theme (Light/Dark)
+- Add theme toggle button in `Header` (navbar)
+- Store selected theme in user profile (persist to backend) and in localStorage for unauthenticated users
+- Apply theme classes to `document.documentElement` or root container
+
+7) UX Flow
+- Landing shows sample profile + Get Started CTA
+- Get Started navigates to Login/Signup
+- After login/signup, navigate to Dashboard and load user links
+- Provide logout button in navbar
+
+8) Security & Flexibility
+- Use password hashing (bcrypt)
+- Use JWT with configurable secret and expiry
+- Design APIs to return minimal user info (id, name, email, theme)
+- Keep code modular: separate `server/routes`, `server/models`, `src/pages`, `src/api`
+
+9) Dev & Scripts
+- Add server start scripts in root `package.json`: `start:server`, `dev:server`
+- Provide `.env.example` and instructions to run both frontend and backend locally
+
+10) Future Enhancements (suggested)
+- Add refresh tokens or cookie-based auth for improved security
+- Add file uploads for avatars (e.g., S3) and image handling
+- Add pagination/sorting for links and analytics endpoints
+- Add role-based access (admin)
+
+Instructions for agent completing tasks
+- Follow this list in order. Implement backend endpoints first and test with Postman.
+- Add frontend pages with stub UI that calls backend; once endpoints work, improve UI/UX.
+- Keep changes minimal and modular; add unit tests for backend if possible.
