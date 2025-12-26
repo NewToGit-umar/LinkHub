@@ -4,6 +4,9 @@ const dotenv = require('dotenv');
 const morgan = require('morgan');
 const path = require('path');
 
+// Import database configuration
+const { connectDB } = require('./config/database');
+
 // Load environment variables
 dotenv.config();
 
@@ -108,7 +111,10 @@ app.use((error, req, res, next) => {
 
 // ==================== SERVER STARTUP ====================
 
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, async () => {
+  // Connect to MongoDB
+  await connectDB();
+  
   console.log(`
     ╔════════════════════════════════╗
     ║     LinkHub Server Started     ║
