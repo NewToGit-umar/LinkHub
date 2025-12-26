@@ -46,9 +46,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // API Routes (to be implemented)
-app.use('/api/auth', (req, res, next) => {
-  res.status(501).json({ message: 'Auth routes not yet implemented' });
-});
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', (req, res, next) => {
   res.status(501).json({ message: 'User routes not yet implemented' });
 });

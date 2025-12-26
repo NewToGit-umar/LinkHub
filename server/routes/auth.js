@@ -1,53 +1,37 @@
-import express from 'express';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+const express = require('express');
+const authController = require('../controllers/authController');
+const authMiddleware = require('../middleware/auth');
 
-const router = express.Router(); 
+const router = express.Router();
 
-router.post('/register', async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
+/**
+ * Public Routes
+ */
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({
-        message: 'User already exists with this email'
-      });
-    }
+// Register
+router.post('/register', authController.register);
 
-    const user = await User.create({
-      name,
-      email,
-      password
-    });
+// Login
+router.post('/login', authController.login);
 
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
-    );
+// Logout
+router.post('/logout', authController.logout);
 
-    res.status(201).json({
-      message: 'User registered successfully',
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: 'Error creating user',
-      error: error.message
-    });
-  }
-});
+// Refresh token
+router.post('/refresh-token', authMiddleware.protect, authController.refreshToken);
 
-// Login route
-router.post('/login', async (req, res) => {
+/**
+ * Protected Routes
+ * Require authentication
+ */
+
+// Get current user
+router.get('/me', authMiddleware.protect, authController.getMe);
+
+// Update password
+router.patch('/update-password', authMiddleware.protect, authController.updatePassword);
+
+module.exports = router;
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
@@ -58,25 +42,3 @@ router.post('/login', async (req, res) => {
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
-
-    res.status(200).json({
-      message: 'Login successful',
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        isVerified: user.isVerified,
-        avatar: user.avatar
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Login error', error: error.message });
-  }
-});
-
-export default router;
