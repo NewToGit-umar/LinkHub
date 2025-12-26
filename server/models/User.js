@@ -350,6 +350,44 @@ UserSchema.methods.toPublicJSON = function () {
   return user;
 };
 
+/**
+ * Create password reset token
+ * @returns {string} Reset token (unhashed)
+ */
+UserSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  // Hash token before saving
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // Token expires in 1 hour
+  this.passwordResetExpires = Date.now() + 60 * 60 * 1000;
+
+  return resetToken;
+};
+
+/**
+ * Create email verification token
+ * @returns {string} Verification token (unhashed)
+ */
+UserSchema.methods.createEmailVerificationToken = function () {
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+
+  // Hash token before saving
+  this.emailVerificationToken = crypto
+    .createHash('sha256')
+    .update(verificationToken)
+    .digest('hex');
+
+  // Token expires in 24 hours
+  this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000;
+
+  return verificationToken;
+};
+
 // ==================== STATICS ====================
 
 /**

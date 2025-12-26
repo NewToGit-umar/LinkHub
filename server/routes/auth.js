@@ -25,6 +25,25 @@ router.post('/login',
 router.post('/google', authController.googleAuth);
 router.post('/facebook', authController.facebookAuth);
 
+// Forgot Password - Request password reset email
+router.post(
+  '/forgot-password',
+  authMiddleware.authRateLimit,
+  authController.forgotPassword
+);
+
+// Reset Password - Reset password with token
+router.patch(
+  '/reset-password/:token',
+  authController.resetPassword
+);
+
+// Verify Reset Token - Check if reset token is valid
+router.post(
+  '/verify-reset-token',
+  authController.verifyResetToken
+);
+
 // Logout - Clear user session
 router.post('/logout', authController.logout);
 

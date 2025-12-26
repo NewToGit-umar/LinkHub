@@ -399,4 +399,149 @@ exports.unlinkOAuthAccount = asyncHandler(async (req, res, next) => {
   });
 });
 
+/**
+ * Forgot Password - Generate reset token and send email
+ * @route POST /api/v1/auth/forgot-password
+ * @access Public
+ */
+exports.forgotPassword = asyncHandler(async (req, res, next) => {
+  const { email } = req.body;
+
+  // Validate email
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new AppError('Please provide a valid email address', 400);
+  }
+
+  // Find user by email
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    // Don't reveal if user exists (security best practice)
+    return res.status(200).json({
+      status: 'success',
+      message: 'If an account exists with that email, you will receive a password reset link'
+    });
+  }
+
+  // Check if user is blocked
+  if (user.isBlocked) {
+    throw new AppError('Your account has been blocked. Contact support.', 403);
+  }
+
+  // Generate reset token
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+
+  // Create reset URL
+  const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password?token=${resetToken}`;
+
+  try {
+    // Send email
+    const emailService = require('../utils/email');
+    await emailService.sendPasswordResetEmail(user.email, resetToken, resetUrl);
+
+    logger.success(`Password reset email sent to ${user.email}`);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Password reset link has been sent to your email'
+    });
+  } catch (error) {
+    // Clear reset token if email fails
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    logger.error(`Password reset email failed: ${error.message}`);
+    throw new AppError('Email could not be sent. Please try again later.', 500);
+  }
+});
+
+/**
+ * Reset Password - Verify token and update password
+ * @route PATCH /api/v1/auth/reset-password/:token
+ * @access Public
+ */
+exports.resetPassword = asyncHandler(async (req, res, next) => {
+  const { password, passwordConfirm } = req.body;
+  const { token } = req.params;
+
+  // Validate inputs
+  if (!password || !passwordConfirm) {
+    throw new AppError('Please provide password and password confirmation', 400);
+  }
+
+  if (password !== passwordConfirm) {
+    throw new AppError('Passwords do not match', 400);
+  }
+
+  if (password.length < 8) {
+    throw new AppError('Password must be at least 8 characters long', 400);
+  }
+
+  // Hash token and find user
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() }
+  });
+
+  if (!user) {
+    throw new AppError('Password reset token is invalid or has expired', 400);
+  }
+
+  // Check if user is blocked
+  if (user.isBlocked) {
+    throw new AppError('Your account has been blocked. Contact support.', 403);
+  }
+
+  // Update password
+  user.password = password;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  user.passwordChangedAt = Date.now();
+  user.loginAttempts = 0; // Reset login attempts
+  await user.save();
+
+  logger.success(`Password reset successfully for user ${user.email}`);
+
+  // Send user a token and log them in
+  sendTokenResponse(user, 200, res);
+});
+
+/**
+ * Verify Password Reset Token - Check if token is valid
+ * @route POST /api/v1/auth/verify-reset-token
+ * @access Public
+ */
+exports.verifyResetToken = asyncHandler(async (req, res, next) => {
+  const { token } = req.body;
+
+  if (!token) {
+    throw new AppError('Password reset token is required', 400);
+  }
+
+  // Hash token and find user
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() }
+  });
+
+  if (!user) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Password reset token is invalid or has expired'
+    });
+  }
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Token is valid',
+    valid: true
+  });
+});
+
 module.exports = exports;
