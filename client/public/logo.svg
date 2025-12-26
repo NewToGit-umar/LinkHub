@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 800.83 580.94">
+  <defs>
+    <style>
+      .cls-1 {
+        stroke: url(#radial-gradient);
+      }
+
+      .cls-1, .cls-2 {
+        fill: #2d368f;
+        stroke-miterlimit: 10;
+        stroke-width: 3px;
+      }
+
+      .cls-2 {
+        stroke: url(#radial-gradient-2);
+      }
+    </style>
+    <radialGradient id="radial-gradient" cx="292.3" cy="290.47" fx="292.3" fy="290.47" r="291.39" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#28a8e0"/>
+      <stop offset=".15" stop-color="#28a0db"/>
+      <stop offset=".37" stop-color="#298dcd"/>
+      <stop offset=".64" stop-color="#2a6db6"/>
+      <stop offset=".93" stop-color="#2c4197"/>
+      <stop offset="1" stop-color="#2d368f"/>
+    </radialGradient>
+    <radialGradient id="radial-gradient-2" cx="508.53" fx="508.53" r="291.39" xlink:href="#radial-gradient"/>
+  </defs>
+  <path class="cls-1" d="M583.09,299.84v207.28c0,19.96-8.09,38.06-21.19,51.13-13.09,13.09-31.17,21.19-51.13,21.19H77.55c-41.35,0-74.99-32.99-76.03-74.1v-.09c-.02-.62-.02-1.24-.02-1.87V77.55C1.5,35.56,35.54,1.5,77.55,1.5c21.01,0,40.02,8.51,53.78,22.28,13.76,13.76,22.28,32.79,22.28,53.78V399.01c0,19.77,16.03,35.79,35.79,35.79h213.24c19.77,0,35.79-16.03,35.79-35.79v-99.17c0-19.96,8.09-38.06,21.19-51.15,13.09-13.09,31.19-21.19,51.15-21.19,39.93,0,72.32,32.39,72.32,72.34Z"/>
+  <path class="cls-2" d="M217.73,281.1V73.82c0-19.96,8.09-38.06,21.19-51.13,13.09-13.09,31.17-21.19,51.13-21.19h433.22c41.35,0,74.99,32.99,76.03,74.1v.09c.02,.62,.02,1.24,.02,1.87V503.39c0,42-34.04,76.05-76.05,76.05-21.01,0-40.02-8.51-53.78-22.28s-22.28-32.79-22.28-53.78V181.93c0-19.77-16.03-35.79-35.79-35.79h-213.24c-19.77,0-35.79,16.03-35.79,35.79v99.17c0,19.96-8.09,38.06-21.19,51.15-13.09,13.09-31.19,21.19-51.15,21.19-39.93,0-72.32-32.39-72.32-72.34Z"/>
+</svg>

@@ -7,6 +7,7 @@ import Login from './pages/Auth/Login'
 import Register from './pages/Auth/Register'
 import Dashboard from './pages/Dashboard/Dashboard'
 
+
 const queryClient = new QueryClient()
 
 // Protected route component
