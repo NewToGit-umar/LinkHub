@@ -44,6 +44,19 @@ router.post(
   authController.verifyResetToken
 );
 
+// 2FA Verification (without full authentication)
+router.post(
+  '/2fa/verify-otp',
+  authMiddleware.authRateLimit,
+  authController.verify2FAOTP
+);
+
+router.post(
+  '/2fa/verify-backup',
+  authMiddleware.authRateLimit,
+  authController.verify2FABackupCode
+);
+
 // Logout - Clear user session
 router.post('/logout', authController.logout);
 
@@ -97,6 +110,31 @@ router.post(
   '/unlink-oauth',
   authMiddleware.protect,
   authController.unlinkOAuthAccount
+);
+
+/**
+ * 2FA Routes - Require authentication
+ */
+
+// Setup 2FA - Generate secret and QR code
+router.post(
+  '/2fa/setup',
+  authMiddleware.protect,
+  authController.setup2FA
+);
+
+// Verify and enable 2FA
+router.post(
+  '/2fa/enable',
+  authMiddleware.protect,
+  authController.verify2FA
+);
+
+// Disable 2FA
+router.delete(
+  '/2fa/disable',
+  authMiddleware.protect,
+  authController.disable2FA
 );
 
 module.exports = router;

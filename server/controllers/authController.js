@@ -544,4 +544,200 @@ exports.verifyResetToken = asyncHandler(async (req, res, next) => {
   });
 });
 
+/**
+ * Setup 2FA - Generate secret and QR code
+ * @route POST /api/v1/auth/2fa/setup
+ * @access Protected
+ */
+exports.setup2FA = asyncHandler(async (req, res, next) => {
+  const user = req.user;
+
+  // Check if 2FA is already enabled
+  if (user.twoFactorEnabled) {
+    throw new AppError('Two-factor authentication is already enabled for this account', 400);
+  }
+
+  const twoFAService = require('../utils/twoFA');
+
+  // Generate 2FA secret and QR code
+  const { secret, qrCodeUrl, backupCodes } = await twoFAService.generateSecret(user.email);
+
+  logger.info(`2FA setup initiated for user ${user.email}`);
+
+  res.status(200).json({
+    status: 'success',
+    message: '2FA secret generated. Please scan the QR code and verify with your authenticator app.',
+    data: {
+      secret,
+      qrCodeUrl,
+      backupCodes // Send unhashed codes only once during setup
+    }
+  });
+});
+
+/**
+ * Verify and Enable 2FA - Confirm OTP and enable 2FA
+ * @route POST /api/v1/auth/2fa/verify
+ * @access Protected
+ */
+exports.verify2FA = asyncHandler(async (req, res, next) => {
+  const { secret, token } = req.body;
+  const user = req.user;
+
+  // Validate inputs
+  if (!secret || !token) {
+    throw new AppError('Please provide secret and OTP token', 400);
+  }
+
+  // Validate token format (6 digits)
+  if (!/^\d{6}$/.test(token)) {
+    throw new AppError('OTP token must be 6 digits', 400);
+  }
+
+  const twoFAService = require('../utils/twoFA');
+
+  // Verify OTP token
+  const verified = twoFAService.verifyToken(secret, token);
+
+  if (!verified) {
+    throw new AppError('Invalid or expired OTP token. Please try again.', 400);
+  }
+
+  // Generate backup codes
+  const backupCodes = twoFAService.generateRecoveryCodes(10);
+  const hashedBackupCodes = twoFAService.hashBackupCodes(backupCodes);
+
+  // Update user
+  user.twoFactorSecret = secret;
+  user.backupCodes = hashedBackupCodes;
+  user.twoFactorEnabled = true;
+  await user.save();
+
+  logger.success(`2FA enabled for user ${user.email}`);
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Two-factor authentication has been successfully enabled',
+    data: {
+      backupCodes, // Send unhashed codes only once
+      message: 'Save these backup codes in a secure location'
+    }
+  });
+});
+
+/**
+ * Disable 2FA - Requires password confirmation
+ * @route DELETE /api/v1/auth/2fa/disable
+ * @access Protected
+ */
+exports.disable2FA = asyncHandler(async (req, res, next) => {
+  const { password } = req.body;
+  const user = req.user;
+
+  // Require password confirmation
+  if (!password) {
+    throw new AppError('Password confirmation is required to disable 2FA', 400);
+  }
+
+  // Verify password
+  const isPasswordCorrect = await user.comparePassword(password);
+
+  if (!isPasswordCorrect) {
+    throw new AppError('Password is incorrect', 401);
+  }
+
+  // Check if 2FA is enabled
+  if (!user.twoFactorEnabled) {
+    throw new AppError('Two-factor authentication is not enabled for this account', 400);
+  }
+
+  // Disable 2FA
+  user.twoFactorSecret = undefined;
+  user.backupCodes = [];
+  user.twoFactorEnabled = false;
+  await user.save({ validateBeforeSave: false });
+
+  logger.warn(`2FA disabled for user ${user.email}`);
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Two-factor authentication has been disabled'
+  });
+});
+
+/**
+ * Verify OTP during login
+ * @route POST /api/v1/auth/2fa/verify-otp
+ * @access Public (requires temporary auth token)
+ */
+exports.verify2FAOTP = asyncHandler(async (req, res, next) => {
+  const { userId, token } = req.body;
+
+  if (!userId || !token) {
+    throw new AppError('User ID and OTP token are required', 400);
+  }
+
+  // Validate token format
+  if (!/^\d{6}$/.test(token)) {
+    throw new AppError('OTP token must be 6 digits', 400);
+  }
+
+  const user = await User.findById(userId);
+
+  if (!user || !user.twoFactorEnabled) {
+    throw new AppError('2FA is not enabled for this user', 400);
+  }
+
+  const twoFAService = require('../utils/twoFA');
+
+  // Verify OTP token
+  const verified = twoFAService.verifyToken(user.twoFactorSecret, token);
+
+  if (!verified) {
+    throw new AppError('Invalid or expired OTP token', 400);
+  }
+
+  logger.success(`2FA verified for user ${user.email}`);
+
+  // Send tokens
+  sendTokenResponse(user, 200, res);
+});
+
+/**
+ * Verify Backup Code during 2FA login
+ * @route POST /api/v1/auth/2fa/verify-backup
+ * @access Public (requires temporary auth token)
+ */
+exports.verify2FABackupCode = asyncHandler(async (req, res, next) => {
+  const { userId, code } = req.body;
+
+  if (!userId || !code) {
+    throw new AppError('User ID and backup code are required', 400);
+  }
+
+  const user = await User.findById(userId);
+
+  if (!user || !user.twoFactorEnabled) {
+    throw new AppError('2FA is not enabled for this user', 400);
+  }
+
+  const twoFAService = require('../utils/twoFA');
+
+  // Verify backup code
+  const result = await twoFAService.verifyBackupCode(code, user.backupCodes);
+
+  if (!result.verified) {
+    throw new AppError(result.message, 400);
+  }
+
+  // Update backup codes
+  user.backupCodes = result.updatedBackupCodes;
+  await user.save({ validateBeforeSave: false });
+
+  logger.success(`2FA backup code verified for user ${user.email} (${result.remainingCodes} remaining)`);
+
+  // Send tokens
+  sendTokenResponse(user, 200, res);
+});
+
 module.exports = exports;
