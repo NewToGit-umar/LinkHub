@@ -84,4 +84,11 @@ export const templatesAPI = {
   apply: (bioPageId, templateSlug) => api.post('/templates/apply', { bioPageId, templateSlug })
 }
 
+export const engagementAPI = {
+  trackClick: (linkId, data) => api.post(`/engagement/click/${linkId}`, data),
+  getLinkStats: (linkId, params) => api.get(`/engagement/link/${linkId}`, { params }),
+  getBioPageEngagement: (bioPageId, params) => api.get(`/engagement/page/${bioPageId}`, { params }),
+  getUserEngagement: (params) => api.get('/engagement/user', { params })
+}
+
 export default api

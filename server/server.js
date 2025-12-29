@@ -48,6 +48,9 @@ app.use('/api/bio', (await import('./routes/bio.js')).default);
 // Mount templates routes (Task 34)
 app.use('/api/templates', (await import('./routes/templates.js')).default);
 
+// Mount engagement routes (Task 35)
+app.use('/api/engagement', (await import('./routes/engagement.js')).default);
+
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/linkhub')
   .then(() => console.log('✅ MongoDB connected successfully'))
