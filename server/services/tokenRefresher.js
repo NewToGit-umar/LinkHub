@@ -1,4 +1,3 @@
-import cron from 'node-cron'
 import SocialAccount from '../models/SocialAccount.js'
 
 const REFRESH_WINDOW_MS = (24 * 60 * 60 * 1000) // 24 hours before expiry
@@ -63,11 +62,18 @@ async function findAccountsToRefresh() {
 
 let job = null
 
+function createHourlyJob(fn) {
+  const intervalMs = 60 * 60 * 1000 // 1 hour
+  const id = setInterval(fn, intervalMs)
+  return {
+    stop: () => clearInterval(id)
+  }
+}
+
 export function startTokenRefresher() {
   if (job) return job
 
-  // Run hourly at minute 0
-  job = cron.schedule('0 * * * *', async () => {
+  job = createHourlyJob(async () => {
     try {
       const candidates = await findAccountsToRefresh()
       if (!candidates || candidates.length === 0) return
@@ -80,8 +86,8 @@ export function startTokenRefresher() {
     }
   })
 
-  // Start immediately as well
-  (async () => {
+  // Run once at startup
+  ;(async () => {
     try {
       const candidates = await findAccountsToRefresh()
       for (const acc of candidates) await refreshAccount(acc)
@@ -90,7 +96,7 @@ export function startTokenRefresher() {
     }
   })()
 
-  console.log('✅ Token refresher started (hourly)')
+  console.log('✅ Token refresher started (hourly via setInterval)')
   return job
 }
 

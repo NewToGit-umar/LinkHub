@@ -66,7 +66,6 @@ export async function fetchAnalyticsForAccount(account) {
   }
 }
 
-export default { fetchAnalyticsForAccount }
 
 export async function ingestForUser(userId) {
   const accounts = await SocialAccount.find({ userId })
@@ -105,40 +104,5 @@ export async function ingestForAllUsers() {
   return total
 }
 
-export async function ingestForUser(userId) {
-  const accounts = await SocialAccount.find({ userId })
-  let ingested = 0
+export default { fetchAnalyticsForAccount, ingestForUser, ingestForAllUsers }
 
-  for (const acc of accounts) {
-    const providerData = await fetchAnalyticsForAccount(acc)
-    if (!providerData || providerData.length === 0) {
-      const recentPosts = await Post.find({ userId, platforms: acc.platform }).sort({ publishedAt: -1 }).limit(10)
-      for (const p of recentPosts) {
-        await Analytics.create({ postId: p._id, userId, platform: acc.platform, metrics: { likes:0, shares:0, comments:0, impressions:0, reach:0 }, recordedAt: new Date() })
-        ingested++
-      }
-      continue
-    }
-
-    for (const item of providerData) {
-      await Analytics.create({ postId: item.postId || null, userId, platform: acc.platform, metrics: item.metrics || {}, recordedAt: item.recordedAt ? new Date(item.recordedAt) : new Date() })
-      ingested++
-    }
-  }
-
-  return ingested
-}
-
-export async function ingestForAllUsers() {
-  const accounts = await SocialAccount.find({})
-  const byUser = {}
-  for (const a of accounts) {
-    byUser[a.userId] = true
-  }
-  let total = 0
-  for (const userId of Object.keys(byUser)) {
-    // eslint-disable-next-line no-await-in-loop
-    total += await ingestForUser(userId)
-  }
-  return total
-}
