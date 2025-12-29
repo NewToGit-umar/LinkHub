@@ -1,4 +1,5 @@
 import Post from '../models/Post.js'
+import { notifyPostScheduled } from '../services/scheduler.js'
 
 const ALLOWED_PLATFORMS = ['twitter', 'instagram', 'facebook', 'linkedin', 'tiktok', 'youtube']
 
@@ -33,6 +34,12 @@ export async function createPost(req, res) {
     }
 
     const post = await Post.create(postData)
+
+    // Send notification for scheduled posts
+    if (post.scheduledAt) {
+      const postTitle = post.content ? post.content.substring(0, 50) : 'Untitled'
+      await notifyPostScheduled(userId, post._id, post.scheduledAt, postTitle)
+    }
 
     return res.status(201).json({ message: 'Post created', post })
   } catch (err) {

@@ -1,7 +1,7 @@
-import cron from 'node-cron'
 import Post from '../models/Post.js'
+import Notification from '../models/Notification.js'
 
-let job = null
+let schedulerInterval = null
 
 async function processDuePosts() {
   try {
@@ -23,20 +23,38 @@ async function processDuePosts() {
 }
 
 export function startScheduler() {
-  if (job) return job
+  if (schedulerInterval) return
 
-  // run every minute
-  job = cron.schedule('* * * * *', async () => {
-    await processDuePosts()
-  })
+  // run every minute using setInterval
+  schedulerInterval = setInterval(processDuePosts, 60 * 1000)
 
   // run immediately at startup
   processDuePosts().catch(err => console.error('Scheduler startup error:', err))
 
   console.log('✅ Scheduler started (running every minute)')
-  return job
+  return schedulerInterval
 }
 
 export function stopScheduler() {
-  if (job) job.stop()
+  if (schedulerInterval) {
+    clearInterval(schedulerInterval)
+    schedulerInterval = null
+  }
+}
+
+// Notification for scheduled post (call this when creating a scheduled post)
+export async function notifyPostScheduled(userId, postId, scheduledAt, postTitle) {
+  const scheduleDate = new Date(scheduledAt)
+  const formatted = scheduleDate.toLocaleString()
+  
+  return Notification.notify(
+    userId,
+    'post_scheduled',
+    'Post Scheduled',
+    `Your post "${postTitle || 'Untitled'}" has been scheduled for ${formatted}.`,
+    {
+      reference: { type: 'post', id: postId },
+      actionUrl: `/posts`
+    }
+  )
 }

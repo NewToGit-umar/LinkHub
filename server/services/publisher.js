@@ -1,8 +1,8 @@
-import cron from 'node-cron'
 import Post from '../models/Post.js'
 import SocialAccount from '../models/SocialAccount.js'
+import Notification from '../models/Notification.js'
 
-let job = null
+let publisherInterval = null
 
 // Placeholder provider publishers. Real implementations call provider APIs.
 const providerPublishers = {
@@ -48,6 +48,14 @@ async function publishPost(post) {
       post.publishResult = results
       post.publishedAt = new Date()
       await post.save()
+
+      // Send success notification
+      await Notification.notifyPostPublished(
+        post.userId,
+        post._id,
+        post.content?.substring(0, 50) || 'Untitled Post'
+      )
+
       return true
     }
 
@@ -59,6 +67,13 @@ async function publishPost(post) {
       post.scheduledAt = new Date(Date.now() + 60 * 1000) // retry in 1 minute
     } else {
       post.status = 'failed'
+      // Send failure notification
+      await Notification.notifyPostFailed(
+        post.userId,
+        post._id,
+        post.content?.substring(0, 50) || 'Untitled Post',
+        post.lastError
+      )
     }
     post.publishResult = results
     await post.save()
@@ -72,6 +87,13 @@ async function publishPost(post) {
       post.scheduledAt = new Date(Date.now() + 60 * 1000)
     } else {
       post.status = 'failed'
+      // Send failure notification
+      await Notification.notifyPostFailed(
+        post.userId,
+        post._id,
+        post.content?.substring(0, 50) || 'Untitled Post',
+        err.message
+      )
     }
     await post.save()
     return false
@@ -93,11 +115,11 @@ async function processQueue() {
 }
 
 export function startPublisher() {
-  if (job) return job
-  // run every minute
-  job = cron.schedule('* * * * *', async () => {
-    await processQueue()
-  })
+  if (publisherInterval) return
+  // run every minute using setInterval
+  publisherInterval = setInterval(processQueue, 60 * 1000)
+  console.log('📤 Publisher service started (interval)')
+}
 
   // also run immediately
   processQueue().catch(err => console.error('publisher startup error:', err))
