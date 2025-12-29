@@ -37,6 +37,8 @@ app.use('/api/auth', (await import('./routes/auth.js')).default);
 app.use('/api/dashboard', (await import('./routes/dashboard.js')).default);
 // Mount social routes (Task 14)
 app.use('/api/social', (await import('./routes/social.js')).default);
+// Mount posts routes (Task 20)
+app.use('/api/posts', (await import('./routes/posts.js')).default);
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/linkhub')
