@@ -73,6 +73,9 @@ app.use('/api/milestones', (await import('./routes/milestones.js')).default);
 // Mount admin routes (Task 46)
 app.use('/api/admin', (await import('./routes/admin.js')).default);
 
+// Mount privacy/GDPR routes (Task 49)
+app.use('/api/privacy', (await import('./routes/privacy.js')).default);
+
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/linkhub')
   .then(() => console.log('✅ MongoDB connected successfully'))

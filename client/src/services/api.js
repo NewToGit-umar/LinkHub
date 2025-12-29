@@ -146,4 +146,11 @@ export const adminAPI = {
   getSystemAnalytics: () => api.get('/admin/analytics')
 }
 
+export const privacyAPI = {
+  exportData: () => api.get('/privacy/export'),
+  deleteAccount: (confirmDelete) => api.post('/privacy/delete-account', { confirmDelete }),
+  getSettings: () => api.get('/privacy/settings'),
+  updateSettings: (settings) => api.patch('/privacy/settings', settings)
+}
+
 export default api

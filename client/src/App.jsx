@@ -16,6 +16,7 @@ import BioPageView from "./pages/Bio/BioPageView";
 import TeamList from "./pages/Teams/TeamList";
 import TeamDashboard from "./pages/Teams/TeamDashboard";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
+import PrivacySettings from "./pages/Settings/PrivacySettings";
 
 const queryClient = new QueryClient();
 
@@ -127,6 +128,14 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings/privacy"
+          element={
+            <ProtectedRoute>
+              <PrivacySettings />
             </ProtectedRoute>
           }
         />

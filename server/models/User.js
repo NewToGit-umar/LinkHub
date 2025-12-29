@@ -12,6 +12,12 @@ const UserSchema = new Schema({
   isSuspended: { type: Boolean, default: false },
   suspendedAt: { type: Date, default: null },
   avatar: { type: String, default: null },
+  privacySettings: {
+    profilePublic: { type: Boolean, default: true },
+    showEmail: { type: Boolean, default: false },
+    allowAnalytics: { type: Boolean, default: true },
+    allowMarketing: { type: Boolean, default: false }
+  },
   createdAt: { type: Date, default: Date.now }
 })
 
