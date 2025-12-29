@@ -52,6 +52,9 @@ startTokenRefresher()
 // Start post scheduler service
 import { startScheduler } from './services/scheduler.js'
 startScheduler()
+// Start publisher service to publish queued posts
+import { startPublisher } from './services/publisher.js'
+startPublisher()
 
 // Basic route for testing
 app.get('/api/health', (req, res) => {
