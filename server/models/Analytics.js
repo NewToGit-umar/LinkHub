@@ -27,7 +27,7 @@ AnalyticsSchema.index({ userId: 1, postId: 1 })
 
 // Aggregation helpers
 AnalyticsSchema.statics.aggregateByPlatform = function(userId, from, to) {
-  const match = { userId: mongoose.Types.ObjectId(userId) }
+  const match = { userId: new mongoose.Types.ObjectId(userId) }
   if (from) match.recordedAt = { $gte: new Date(from) }
   if (to) match.recordedAt = match.recordedAt ? { ...match.recordedAt, $lte: new Date(to) } : { $lte: new Date(to) }
 
@@ -52,7 +52,7 @@ AnalyticsSchema.statics.monthlyCounts = function(userId, months = 6) {
   start.setHours(0,0,0,0)
 
   return this.aggregate([
-    { $match: { userId: mongoose.Types.ObjectId(userId), recordedAt: { $gte: start } } },
+    { $match: { userId: new mongoose.Types.ObjectId(userId), recordedAt: { $gte: start } } },
     { $group: {
       _id: { year: { $year: '$recordedAt' }, month: { $month: '$recordedAt' } },
       likes: { $sum: '$metrics.likes' },
@@ -65,7 +65,7 @@ AnalyticsSchema.statics.monthlyCounts = function(userId, months = 6) {
 }
 
 AnalyticsSchema.statics.topPosts = function(userId, from, to, limit = 5) {
-  const match = { userId: mongoose.Types.ObjectId(userId) }
+  const match = { userId: new mongoose.Types.ObjectId(userId) }
   if (from) match.recordedAt = { $gte: new Date(from) }
   if (to) match.recordedAt = match.recordedAt ? { ...match.recordedAt, $lte: new Date(to) } : { $lte: new Date(to) }
 
