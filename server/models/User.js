@@ -7,8 +7,10 @@ const UserSchema = new Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true },
-  role: { type: String, default: 'user' },
+  role: { type: String, enum: ['user', 'moderator', 'admin'], default: 'user' },
   isVerified: { type: Boolean, default: false },
+  isSuspended: { type: Boolean, default: false },
+  suspendedAt: { type: Date, default: null },
   avatar: { type: String, default: null },
   createdAt: { type: Date, default: Date.now }
 })

@@ -66,6 +66,9 @@ app.use('/api/notifications', (await import('./routes/notifications.js')).defaul
 // Mount milestones routes (Task 45)
 app.use('/api/milestones', (await import('./routes/milestones.js')).default);
 
+// Mount admin routes (Task 46)
+app.use('/api/admin', (await import('./routes/admin.js')).default);
+
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/linkhub')
   .then(() => console.log('✅ MongoDB connected successfully'))

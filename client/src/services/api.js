@@ -137,4 +137,13 @@ export const milestonesAPI = {
   triggerCheck: () => api.post('/milestones/check')
 }
 
+export const adminAPI = {
+  getOverview: () => api.get('/admin/overview'),
+  getUsers: (params) => api.get('/admin/users', { params }),
+  updateUserRole: (userId, role) => api.patch(`/admin/users/${userId}/role`, { role }),
+  toggleUserSuspension: (userId) => api.post(`/admin/users/${userId}/suspend`),
+  deleteUser: (userId) => api.delete(`/admin/users/${userId}`),
+  getSystemAnalytics: () => api.get('/admin/analytics')
+}
+
 export default api

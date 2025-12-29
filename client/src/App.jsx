@@ -15,6 +15,7 @@ import BioEditor from "./pages/Bio/BioEditor";
 import BioPageView from "./pages/Bio/BioPageView";
 import TeamList from "./pages/Teams/TeamList";
 import TeamDashboard from "./pages/Teams/TeamDashboard";
+import AdminDashboard from "./pages/Admin/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -118,6 +119,14 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <TeamDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
             </ProtectedRoute>
           }
         />
