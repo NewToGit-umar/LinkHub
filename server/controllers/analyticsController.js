@@ -1,13 +1,7 @@
 import Analytics from '../models/Analytics.js'
 import SocialAccount from '../models/SocialAccount.js'
 import Post from '../models/Post.js'
-
-// Placeholder: fetch analytics from provider APIs for an account.
-// Real implementation would call provider endpoints with account tokens.
-async function fetchProviderAnalyticsPlaceholder(account) {
-  // Return empty metrics for recent posts — placeholder only
-  return []
-}
+import analyticsService from '../services/analyticsService.js'
 
 export async function fetchAndIngest(req, res) {
   try {
@@ -18,11 +12,11 @@ export async function fetchAndIngest(req, res) {
     let ingested = 0
 
     for (const acc of accounts) {
-      // placeholder fetch
-      const providerData = await fetchProviderAnalyticsPlaceholder(acc)
+      // fetch provider data via analytics service (placeholder implementations)
+      const providerData = await analyticsService.fetchAnalyticsForAccount(acc)
 
-      // If providerData empty, create placeholder analytics for recent posts
       if (!providerData || providerData.length === 0) {
+        // fallback: record zeroed metrics for recent posts
         const recentPosts = await Post.find({ userId, platforms: acc.platform }).sort({ publishedAt: -1 }).limit(10)
         for (const p of recentPosts) {
           await Analytics.create({
@@ -34,17 +28,18 @@ export async function fetchAndIngest(req, res) {
           })
           ingested++
         }
-      } else {
-        for (const item of providerData) {
-          await Analytics.create({
-            postId: item.postId || null,
-            userId,
-            platform: acc.platform,
-            metrics: item.metrics || { likes: 0, shares: 0, comments: 0, impressions: 0, reach: 0 },
-            recordedAt: item.recordedAt ? new Date(item.recordedAt) : new Date()
-          })
-          ingested++
-        }
+        continue
+      }
+
+      for (const item of providerData) {
+        await Analytics.create({
+          postId: item.postId || null,
+          userId,
+          platform: acc.platform,
+          metrics: item.metrics || { likes: 0, shares: 0, comments: 0, impressions: 0, reach: 0 },
+          recordedAt: item.recordedAt ? new Date(item.recordedAt) : new Date()
+        })
+        ingested++
       }
     }
 
