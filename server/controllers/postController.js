@@ -52,3 +52,61 @@ export async function listPosts(req, res) {
     return res.status(500).json({ message: 'Error fetching posts', error: err.message })
   }
 }
+
+export async function updatePost(req, res) {
+  try {
+    const userId = req.user && req.user.id
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' })
+
+    const { id } = req.params
+    const post = await Post.findById(id)
+    if (!post) return res.status(404).json({ message: 'Post not found' })
+    if (String(post.userId) !== String(userId)) return res.status(403).json({ message: 'Forbidden' })
+
+    // Prevent edits once publishing/published/queued
+    if (['publishing', 'published', 'queued'].includes(post.status)) {
+      return res.status(400).json({ message: 'Cannot edit a post that is publishing, queued, or already published' })
+    }
+
+    const { content, media, platforms, scheduledAt } = req.body
+    if (content !== undefined) post.content = content
+    if (Array.isArray(media)) post.media = media
+    if (Array.isArray(platforms) && platforms.length > 0) post.platforms = platforms
+    if (scheduledAt !== undefined) {
+      const dt = scheduledAt ? new Date(scheduledAt) : null
+      if (dt && isNaN(dt.getTime())) return res.status(400).json({ message: 'Invalid scheduledAt' })
+      post.scheduledAt = dt
+      post.status = dt ? 'scheduled' : 'draft'
+    }
+
+    await post.save()
+    return res.status(200).json({ message: 'Post updated', post })
+  } catch (err) {
+    console.error('updatePost error', err)
+    return res.status(500).json({ message: 'Error updating post', error: err.message })
+  }
+}
+
+export async function deletePost(req, res) {
+  try {
+    const userId = req.user && req.user.id
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' })
+
+    const { id } = req.params
+    const post = await Post.findById(id)
+    if (!post) return res.status(404).json({ message: 'Post not found' })
+    if (String(post.userId) !== String(userId)) return res.status(403).json({ message: 'Forbidden' })
+
+    if (['publishing', 'published'].includes(post.status)) {
+      return res.status(400).json({ message: 'Cannot delete a post that is publishing or already published' })
+    }
+
+    // Soft-cancel the post for auditability
+    post.status = 'cancelled'
+    await post.save()
+    return res.status(200).json({ message: 'Post cancelled' })
+  } catch (err) {
+    console.error('deletePost error', err)
+    return res.status(500).json({ message: 'Error deleting post', error: err.message })
+  }
+}

@@ -10,4 +10,10 @@ router.post('/', auth, postController.createPost)
 // List posts for current user
 router.get('/', auth, postController.listPosts)
 
+// Update a post
+router.put('/:id', auth, postController.updatePost)
+
+// Delete (cancel) a post
+router.delete('/:id', auth, postController.deletePost)
+
 export default router
