@@ -114,4 +114,13 @@ export const invitationsAPI = {
   resend: (slug, invitationId) => api.post(`/invitations/team/${slug}/${invitationId}/resend`)
 }
 
+export const commentsAPI = {
+  create: (data) => api.post('/comments', data),
+  getPostComments: (postId, params) => api.get(`/comments/post/${postId}`, { params }),
+  getReplies: (commentId, params) => api.get(`/comments/${commentId}/replies`, { params }),
+  update: (commentId, data) => api.patch(`/comments/${commentId}`, data),
+  delete: (commentId) => api.delete(`/comments/${commentId}`),
+  react: (commentId, reaction) => api.post(`/comments/${commentId}/react`, { reaction })
+}
+
 export default api

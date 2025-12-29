@@ -57,6 +57,9 @@ app.use('/api/teams', (await import('./routes/teams.js')).default);
 // Mount invitations routes (Task 38)
 app.use('/api/invitations', (await import('./routes/invitations.js')).default);
 
+// Mount comments routes (Task 40)
+app.use('/api/comments', (await import('./routes/comments.js')).default);
+
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/linkhub')
   .then(() => console.log('✅ MongoDB connected successfully'))
