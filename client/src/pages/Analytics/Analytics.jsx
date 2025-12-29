@@ -1,5 +1,3 @@
-import React, { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import React, { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { analyticsAPI } from '../../services/api'
@@ -97,6 +95,4 @@ export default function Analytics() {
     </div>
   )
 }
-    </div>
-  );
 }
