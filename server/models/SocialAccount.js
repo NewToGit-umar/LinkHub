@@ -128,8 +128,14 @@ SocialAccountSchema.methods.toPublicJSON = function () {
  */
 SocialAccountSchema.methods.revoke = async function () {
   this.isRevoked = true
+  this.isActive = false
   this.revokedAt = Date.now()
-  return this.save()
+  // Remove sensitive tokens from the stored record
+  this.accessToken = undefined
+  this.refreshToken = undefined
+  this.tokenExpiresAt = undefined
+  await this.save()
+  return this
 }
 
 /**
