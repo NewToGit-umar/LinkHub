@@ -22,6 +22,11 @@ async function refreshAccount(account) {
 
     const result = await refresher(account)
     if (result && result.accessToken) {
+export async function refreshAccountForUserProvider({ userId, provider }) {
+  const acct = await SocialAccount.findOne({ userId, platform: provider.toLowerCase() })
+  if (!acct) throw new Error('Social account not found')
+  return refreshAccount(acct)
+}
       account.accessToken = result.accessToken
       if (result.refreshToken) account.refreshToken = result.refreshToken
       if (result.tokenExpiresAt) account.tokenExpiresAt = new Date(result.tokenExpiresAt)

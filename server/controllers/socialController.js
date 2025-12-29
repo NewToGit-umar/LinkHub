@@ -1,4 +1,5 @@
 import SocialAccount from '../models/SocialAccount.js'
+import { refreshAccountForUserProvider } from '../services/tokenRefresher.js'
 
 /**
  * Start OAuth flow (scaffold)
@@ -101,6 +102,19 @@ export async function disconnect(req, res) {
     return res.status(200).json({ message: 'Account disconnected' })
   } catch (err) {
     return res.status(500).json({ message: 'Error disconnecting account', error: err.message })
+  }
+}
+
+export async function sync(req, res) {
+  try {
+    const userId = req.user && req.user.id
+    const { provider } = req.params
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' })
+
+    await refreshAccountForUserProvider({ userId, provider })
+    return res.status(200).json({ message: 'Sync started' })
+  } catch (err) {
+    return res.status(500).json({ message: 'Error syncing account', error: err.message })
   }
 }
 const SocialAccount = require('../models/SocialAccount');

@@ -16,6 +16,9 @@ router.get('/', auth, socialController.listAccounts)
 // Disconnect account
 router.post('/disconnect/:provider', auth, socialController.disconnect)
 
+// Manual sync/refresh tokens for a provider
+router.post('/refresh/:provider', auth, socialController.sync)
+
 export default router
 const express = require('express');
 const socialController = require('../controllers/socialController');
