@@ -7,46 +7,46 @@ export async function fetchAndIngest(req, res) {
   try {
     const userId = req.user && req.user.id
     if (!userId) return res.status(401).json({ message: 'Unauthorized' })
-
-    const accounts = await SocialAccount.find({ userId })
-    let ingested = 0
-
-    for (const acc of accounts) {
-      // fetch provider data via analytics service (placeholder implementations)
-      const providerData = await analyticsService.fetchAnalyticsForAccount(acc)
-
-      if (!providerData || providerData.length === 0) {
-        // fallback: record zeroed metrics for recent posts
-        const recentPosts = await Post.find({ userId, platforms: acc.platform }).sort({ publishedAt: -1 }).limit(10)
-        for (const p of recentPosts) {
-          await Analytics.create({
-            postId: p._id,
-            userId,
-            platform: acc.platform,
-            metrics: { likes: 0, shares: 0, comments: 0, impressions: 0, reach: 0 },
-            recordedAt: new Date()
-          })
-          ingested++
-        }
-        continue
-      }
-
-      for (const item of providerData) {
-        await Analytics.create({
-          postId: item.postId || null,
-          userId,
-          platform: acc.platform,
-          metrics: item.metrics || { likes: 0, shares: 0, comments: 0, impressions: 0, reach: 0 },
-          recordedAt: item.recordedAt ? new Date(item.recordedAt) : new Date()
-        })
-        ingested++
-      }
-    }
-
-    return res.status(200).json({ message: 'Analytics ingested (placeholder)', ingested })
+    const ingested = await analyticsService.ingestForUser(userId)
+    return res.status(200).json({ message: 'Analytics ingested (user)', ingested })
   } catch (err) {
     console.error('fetchAndIngest error', err)
     return res.status(500).json({ message: 'Error fetching analytics', error: err.message })
+  }
+}
+
+export async function aggregateMetrics(req, res) {
+  try {
+    const userId = req.user && req.user.id
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' })
+
+    const { from, to, limit } = req.query
+
+    const match = { userId: Post && Post ? undefined : undefined }
+    // Use mongoose aggregate directly on Analytics
+    const pipeline = []
+    pipeline.push({ $match: { userId: analyticsService && analyticsService ? { $exists: true } : {} } })
+
+    // simpler approach: aggregate totals by platform and top posts
+    const totals = await Analytics.aggregate([
+      { $match: { userId: require('mongoose').Types.ObjectId(userId), recordedAt: { $gte: from ? new Date(from) : new Date(0), $lte: to ? new Date(to) : new Date() } } },
+      { $group: { _id: '$platform', likes: { $sum: '$metrics.likes' }, shares: { $sum: '$metrics.shares' }, comments: { $sum: '$metrics.comments' }, reach: { $sum: '$metrics.reach' } } },
+      { $project: { platform: '$_id', likes: 1, shares: 1, comments:1, reach:1, _id:0 } }
+    ])
+
+    // top posts by total engagement
+    const topPosts = await Analytics.aggregate([
+      { $match: { userId: require('mongoose').Types.ObjectId(userId), recordedAt: { $gte: from ? new Date(from) : new Date(0), $lte: to ? new Date(to) : new Date() } } },
+      { $group: { _id: '$postId', likes: { $sum: '$metrics.likes' }, shares: { $sum: '$metrics.shares' }, comments: { $sum: '$metrics.comments' }, reach: { $sum: '$metrics.reach' } } },
+      { $project: { postId: '$_id', score: { $add: ['$likes','$shares','$comments'] }, likes:1, shares:1, comments:1, reach:1, _id:0 } },
+      { $sort: { score: -1 } },
+      { $limit: limit ? parseInt(limit,10) : 5 }
+    ])
+
+    return res.status(200).json({ totals, topPosts })
+  } catch (err) {
+    console.error('aggregateMetrics error', err)
+    return res.status(500).json({ message: 'Error aggregating metrics', error: err.message })
   }
 }
 

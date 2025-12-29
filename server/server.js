@@ -57,6 +57,9 @@ startScheduler()
 // Start publisher service to publish queued posts
 import { startPublisher } from './services/publisher.js'
 startPublisher()
+// Start analytics scheduler
+import { startAnalyticsScheduler } from './services/analyticsScheduler.js'
+startAnalyticsScheduler()
 
 // Basic route for testing
 app.get('/api/health', (req, res) => {

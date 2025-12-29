@@ -68,6 +68,7 @@ export const postsAPI = {
 export const analyticsAPI = {
   fetch: () => api.post('/analytics/fetch'),
   summary: (params) => api.get('/analytics/summary', { params }),
+  aggregate: (params) => api.get('/analytics/aggregate', { params })
 }
 
 export default api

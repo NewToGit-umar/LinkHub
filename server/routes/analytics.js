@@ -10,4 +10,7 @@ router.post('/fetch', auth, analyticsController.fetchAndIngest)
 // Get aggregated analytics summary
 router.get('/summary', auth, analyticsController.summary)
 
+// Aggregate metrics and top posts
+router.get('/aggregate', auth, analyticsController.aggregateMetrics)
+
 export default router

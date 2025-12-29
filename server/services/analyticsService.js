@@ -1,4 +1,8 @@
 import Post from '../models/Post.js'
+import Analytics from '../models/Analytics.js'
+import SocialAccount from '../models/SocialAccount.js'
+import Analytics from '../models/Analytics.js'
+import SocialAccount from '../models/SocialAccount.js'
 
 // Placeholder analytics fetcher service.
 // Real provider integrations should replace the per-provider stubs below.
@@ -63,3 +67,78 @@ export async function fetchAnalyticsForAccount(account) {
 }
 
 export default { fetchAnalyticsForAccount }
+
+export async function ingestForUser(userId) {
+  const accounts = await SocialAccount.find({ userId })
+  let ingested = 0
+  for (const acc of accounts) {
+    const providerData = await fetchAnalyticsForAccount(acc)
+    if (!providerData || providerData.length === 0) {
+      // fallback: zeroed metrics for recent posts
+      const recent = await Post.find({ userId, platforms: acc.platform }).sort({ publishedAt: -1 }).limit(10)
+      for (const p of recent) {
+        await Analytics.create({ postId: p._id, userId, platform: acc.platform, metrics: { likes:0, shares:0, comments:0, impressions:0, reach:0 }, recordedAt: new Date() })
+        ingested++
+      }
+      continue
+    }
+
+    for (const item of providerData) {
+      await Analytics.create({ postId: item.postId || null, userId, platform: acc.platform, metrics: item.metrics || {}, recordedAt: item.recordedAt ? new Date(item.recordedAt) : new Date() })
+      ingested++
+    }
+  }
+  return ingested
+}
+
+export async function ingestForAllUsers() {
+  const accounts = await SocialAccount.find({})
+  const byUser = {}
+  for (const a of accounts) {
+    byUser[a.userId] = byUser[a.userId] || []
+    byUser[a.userId].push(a)
+  }
+  let total = 0
+  for (const userId of Object.keys(byUser)) {
+    total += await ingestForUser(userId)
+  }
+  return total
+}
+
+export async function ingestForUser(userId) {
+  const accounts = await SocialAccount.find({ userId })
+  let ingested = 0
+
+  for (const acc of accounts) {
+    const providerData = await fetchAnalyticsForAccount(acc)
+    if (!providerData || providerData.length === 0) {
+      const recentPosts = await Post.find({ userId, platforms: acc.platform }).sort({ publishedAt: -1 }).limit(10)
+      for (const p of recentPosts) {
+        await Analytics.create({ postId: p._id, userId, platform: acc.platform, metrics: { likes:0, shares:0, comments:0, impressions:0, reach:0 }, recordedAt: new Date() })
+        ingested++
+      }
+      continue
+    }
+
+    for (const item of providerData) {
+      await Analytics.create({ postId: item.postId || null, userId, platform: acc.platform, metrics: item.metrics || {}, recordedAt: item.recordedAt ? new Date(item.recordedAt) : new Date() })
+      ingested++
+    }
+  }
+
+  return ingested
+}
+
+export async function ingestForAllUsers() {
+  const accounts = await SocialAccount.find({})
+  const byUser = {}
+  for (const a of accounts) {
+    byUser[a.userId] = true
+  }
+  let total = 0
+  for (const userId of Object.keys(byUser)) {
+    // eslint-disable-next-line no-await-in-loop
+    total += await ingestForUser(userId)
+  }
+  return total
+}
