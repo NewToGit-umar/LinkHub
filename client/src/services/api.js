@@ -51,4 +51,11 @@ export const dashboardAPI = {
   }
 }
 
+export const socialAPI = {
+  list: () => api.get('/social'),
+  start: (provider) => api.get(`/social/start/${provider}`),
+  callback: (provider, data) => api.post(`/social/callback/${provider}`, data),
+  disconnect: (provider) => api.post(`/social/disconnect/${provider}`),
+}
+
 export default api
