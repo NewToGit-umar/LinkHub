@@ -91,4 +91,16 @@ export const engagementAPI = {
   getUserEngagement: (params) => api.get('/engagement/user', { params })
 }
 
+export const teamsAPI = {
+  create: (data) => api.post('/teams', data),
+  list: () => api.get('/teams'),
+  get: (slug) => api.get(`/teams/${slug}`),
+  update: (slug, data) => api.patch(`/teams/${slug}`, data),
+  delete: (slug) => api.delete(`/teams/${slug}`),
+  getMembers: (slug) => api.get(`/teams/${slug}/members`),
+  addMember: (slug, data) => api.post(`/teams/${slug}/members`, data),
+  removeMember: (slug, memberId) => api.delete(`/teams/${slug}/members/${memberId}`),
+  updateMemberRole: (slug, memberId, role) => api.patch(`/teams/${slug}/members/${memberId}/role`, { role })
+}
+
 export default api
