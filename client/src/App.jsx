@@ -8,6 +8,7 @@ import Register from "./pages/Auth/Register";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Accounts from "./pages/Accounts/Accounts";
 import Posts from "./pages/Posts/Posts";
+import Calendar from "./pages/Calendar/Calendar";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,14 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <Posts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/calendar"
+          element={
+            <ProtectedRoute>
+              <Calendar />
             </ProtectedRoute>
           }
         />
