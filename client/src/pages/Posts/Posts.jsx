@@ -72,74 +72,75 @@ export default function Posts() {
       )}
 
       <PostComposer open={open} onClose={() => setOpen(false)} />
-    </div>
-  );
-}
-{
-  selected && (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="w-full max-w-2xl bg-white rounded p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Post Details</h3>
-          <button onClick={() => setSelected(null)} className="text-gray-500">
-            Close
-          </button>
-        </div>
+      {selected && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-2xl bg-white rounded p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Post Details</h3>
+              <button
+                onClick={() => setSelected(null)}
+                className="text-gray-500"
+              >
+                Close
+              </button>
+            </div>
 
-        <div className="mb-2">
-          <div className="font-medium">Content</div>
-          <div className="text-sm text-gray-700">{selected.content}</div>
-        </div>
+            <div className="mb-2">
+              <div className="font-medium">Content</div>
+              <div className="text-sm text-gray-700">{selected.content}</div>
+            </div>
 
-        <div className="mb-2">
-          <div className="font-medium">Platforms</div>
-          <div className="text-sm text-gray-700">
-            {selected.platforms.join(", ")}
-          </div>
-        </div>
+            <div className="mb-2">
+              <div className="font-medium">Platforms</div>
+              <div className="text-sm text-gray-700">
+                {selected.platforms.join(", ")}
+              </div>
+            </div>
 
-        <div className="mb-2">
-          <div className="font-medium">Status</div>
-          <div className="text-sm text-gray-700">{selected.status}</div>
-        </div>
+            <div className="mb-2">
+              <div className="font-medium">Status</div>
+              <div className="text-sm text-gray-700">{selected.status}</div>
+            </div>
 
-        {selected.publishedAt && (
-          <div className="mb-2 text-sm text-gray-600">
-            Published: {new Date(selected.publishedAt).toLocaleString()}
-          </div>
-        )}
-
-        <div className="mb-2">
-          <div className="font-medium">Publish Result</div>
-          <pre className="text-xs bg-gray-100 p-2 rounded max-h-40 overflow-auto">
-            {JSON.stringify(
-              selected.publishResult || selected.lastError || {},
-              null,
-              2
+            {selected.publishedAt && (
+              <div className="mb-2 text-sm text-gray-600">
+                Published: {new Date(selected.publishedAt).toLocaleString()}
+              </div>
             )}
-          </pre>
-        </div>
 
-        <div className="flex justify-end mt-4 space-x-2">
-          {selected.status === "failed" && (
-            <button
-              onClick={() => {
-                publishMutation.mutate(selected._id);
-                setSelected(null);
-              }}
-              className="px-4 py-2 bg-yellow-600 text-white rounded"
-            >
-              Retry
-            </button>
-          )}
-          <button
-            onClick={() => setSelected(null)}
-            className="px-4 py-2 border rounded"
-          >
-            Close
-          </button>
+            <div className="mb-2">
+              <div className="font-medium">Publish Result</div>
+              <pre className="text-xs bg-gray-100 p-2 rounded max-h-40 overflow-auto">
+                {JSON.stringify(
+                  selected.publishResult || selected.lastError || {},
+                  null,
+                  2
+                )}
+              </pre>
+            </div>
+
+            <div className="flex justify-end mt-4 space-x-2">
+              {selected.status === "failed" && (
+                <button
+                  onClick={() => {
+                    publishMutation.mutate(selected._id);
+                    setSelected(null);
+                  }}
+                  className="px-4 py-2 bg-yellow-600 text-white rounded"
+                >
+                  Retry
+                </button>
+              )}
+              <button
+                onClick={() => setSelected(null)}
+                className="px-4 py-2 border rounded"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
