@@ -13,6 +13,8 @@ import Analytics from "./pages/Analytics/Analytics";
 import BioList from "./pages/Bio/BioList";
 import BioEditor from "./pages/Bio/BioEditor";
 import BioPageView from "./pages/Bio/BioPageView";
+import TeamList from "./pages/Teams/TeamList";
+import TeamDashboard from "./pages/Teams/TeamDashboard";
 
 const queryClient = new QueryClient();
 
@@ -103,6 +105,22 @@ function AppContent() {
         />
         {/* Public bio page view */}
         <Route path="/p/:slug" element={<BioPageView />} />
+        <Route
+          path="/teams"
+          element={
+            <ProtectedRoute>
+              <TeamList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teams/:slug"
+          element={
+            <ProtectedRoute>
+              <TeamDashboard />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
       <Toaster position="top-right" />
