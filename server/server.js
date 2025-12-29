@@ -35,6 +35,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', (await import('./routes/auth.js')).default);
 // Mount dashboard route
 app.use('/api/dashboard', (await import('./routes/dashboard.js')).default);
+// Mount social routes (Task 14)
+app.use('/api/social', (await import('./routes/social.js')).default);
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/linkhub')
