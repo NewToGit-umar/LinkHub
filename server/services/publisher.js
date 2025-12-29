@@ -118,16 +118,16 @@ export function startPublisher() {
   if (publisherInterval) return
   // run every minute using setInterval
   publisherInterval = setInterval(processQueue, 60 * 1000)
-  console.log('📤 Publisher service started (interval)')
-}
-
+  
   // also run immediately
   processQueue().catch(err => console.error('publisher startup error:', err))
 
-  console.log('✅ Publisher started (processing queued posts every minute)')
-  return job
+  console.log('📤 Publisher service started (processing queued posts every minute)')
 }
 
 export function stopPublisher() {
-  if (job) job.stop()
+  if (publisherInterval) {
+    clearInterval(publisherInterval)
+    publisherInterval = null
+  }
 }
