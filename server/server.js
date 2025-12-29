@@ -4,6 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+import { requestLogger, errorLogger, logger } from './utils/logger.js';
 
 // Load environment variables
 dotenv.config();
@@ -30,6 +31,9 @@ app.use(limiter);
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Request logging middleware (Task 47)
+app.use(requestLogger);
 
 // Add after body parsing middleware
 app.use('/api/auth', (await import('./routes/auth.js')).default);
@@ -105,9 +109,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Error logging middleware (Task 47)
+app.use(errorLogger);
+
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
   res.status(500).json({ 
     message: 'Something went wrong!',
     error: process.env.NODE_ENV === 'production' ? {} : err.message 
@@ -116,6 +122,6 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+  logger.info(`Server running on port ${PORT}`);
+  logger.info(`Health check: http://localhost:${PORT}/api/health`);
 });
