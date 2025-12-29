@@ -71,4 +71,10 @@ export const analyticsAPI = {
   aggregate: (params) => api.get('/analytics/aggregate', { params })
 }
 
+export const bioAPI = {
+  create: (data) => api.post('/bio/pages', data),
+  getBySlug: (slug) => api.get(`/bio/pages/${slug}`),
+  update: (id, data) => api.patch(`/bio/pages/${id}`, data)
+}
+
 export default api
