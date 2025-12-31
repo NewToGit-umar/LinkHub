@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
+import Layout from "./components/Layout";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import Dashboard from "./pages/Dashboard/Dashboard";
@@ -21,24 +22,27 @@ import PrivacySettings from "./pages/Settings/PrivacySettings";
 
 const queryClient = new QueryClient();
 
-// Protected route component
+// Protected route component with Layout
 const ProtectedRoute = ({ children }) => {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-gray-600 font-medium">Loading...</p>
+        </div>
       </div>
     );
   }
 
-  return user ? children : <Navigate to="/login" replace />;
+  return user ? <Layout>{children}</Layout> : <Navigate to="/login" replace />;
 };
 
 function AppContent() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

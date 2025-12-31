@@ -39,7 +39,7 @@ export default function TeamList() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6">
+      <div className="p-6">
         <div className="max-w-4xl mx-auto">
           <div className="shimmer h-10 w-48 rounded-xl mb-6"></div>
           <div className="grid gap-4 md:grid-cols-2">
@@ -54,7 +54,7 @@ export default function TeamList() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6">
+      <div className="p-6">
         <div className="max-w-4xl mx-auto">
           <div className="card text-center py-12">
             <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -73,7 +73,7 @@ export default function TeamList() {
   const teams = data || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6">
+    <div className="p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4 fade-in">
