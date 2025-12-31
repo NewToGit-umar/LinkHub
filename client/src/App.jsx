@@ -13,6 +13,7 @@ import Analytics from "./pages/Analytics/Analytics";
 import BioList from "./pages/Bio/BioList";
 import BioEditor from "./pages/Bio/BioEditor";
 import BioPageView from "./pages/Bio/BioPageView";
+import Links from "./pages/Links/Links";
 import TeamList from "./pages/Teams/TeamList";
 import TeamDashboard from "./pages/Teams/TeamDashboard";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
@@ -108,7 +109,23 @@ function AppContent() {
         {/* Public bio page view */}
         <Route path="/p/:slug" element={<BioPageView />} />
         <Route
+          path="/links"
+          element={
+            <ProtectedRoute>
+              <Links />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/teams"
+          element={
+            <ProtectedRoute>
+              <TeamList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/team"
           element={
             <ProtectedRoute>
               <TeamList />

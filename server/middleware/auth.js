@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 
-export default function authMiddleware(req, res, next) {
+function authMiddleware(req, res, next) {
   const auth = req.headers.authorization || req.headers.Authorization
   if (!auth || !auth.startsWith('Bearer ')) {
     return res.status(401).json({ message: 'Missing or invalid authorization header' })
@@ -15,3 +15,6 @@ export default function authMiddleware(req, res, next) {
     return res.status(401).json({ message: 'Invalid or expired token' })
   }
 }
+
+export { authMiddleware as auth, authMiddleware }
+export default authMiddleware

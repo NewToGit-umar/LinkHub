@@ -54,13 +54,13 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mt-2">
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
         <Link
           to="/posts"
-          className="btn-primary inline-flex items-center"
+          className="btn-primary inline-flex items-center mr-4 mt-2"
         >
-          <Plus className="w-4 h-4 mr-2" />
+          <Plus className="w-4 h-4 mr-2 mt-1" />
           New Post
         </Link>
       </div>
