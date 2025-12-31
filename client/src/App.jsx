@@ -64,7 +64,7 @@ const PublicRoute = ({ children }) => {
 
 function AppContent() {
   return (
-    <div className="min-h-screen dark:bg-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-950 via-black to-emerald-900 text-white">
       <Routes>
         {/* Landing page for first-time visitors */}
         <Route

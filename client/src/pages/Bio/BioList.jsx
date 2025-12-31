@@ -106,10 +106,7 @@ export default function BioList() {
             {/* Share Panel */}
             <div>
               {selectedPage ? (
-                <ShareBioLink
-                  slug={selectedPage.slug}
-                  title={selectedPage.title}
-                />
+                <ShareBioLink page={selectedPage} />
               ) : (
                 <div className="bg-gray-100 rounded-lg p-8 text-center text-gray-500">
                   Select a bio page to share

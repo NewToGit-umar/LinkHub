@@ -33,7 +33,7 @@ import toast from "react-hot-toast";
 export default function Analytics() {
   const [isExporting, setIsExporting] = useState(false);
 
-  const { data, isLoading, refetch, isFetching } = useQuery({
+  const { data, isLoading, refetch, isFetching, isError } = useQuery({
     queryKey: ["analytics", "aggregate"],
     queryFn: async () => {
       const r = await analyticsAPI.aggregate();
@@ -173,6 +173,28 @@ export default function Analytics() {
             <div className="shimmer h-80 rounded-2xl"></div>
             <div className="shimmer h-80 rounded-2xl"></div>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="p-6">
+        <div className="max-w-md mx-auto text-center py-12 space-y-4">
+          <AlertCircle className="w-12 h-12 text-amber-500 mx-auto" />
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white">
+            Unable to load analytics
+          </h2>
+          <p className="text-gray-500 dark:text-gray-400">
+            Please try again. Values will remain 0 until data loads.
+          </p>
+          <button
+            onClick={() => refetch()}
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            <RefreshCw className="w-4 h-4" /> Retry
+          </button>
         </div>
       </div>
     );

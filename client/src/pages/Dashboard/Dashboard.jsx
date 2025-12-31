@@ -13,12 +13,19 @@ import {
   TrendingUp,
   Zap,
   Sparkles,
+  RefreshCw,
 } from "lucide-react";
 import { dashboardAPI } from "../../services/api";
 import StatCard from "./StatCard";
+import toast from "react-hot-toast";
 
 const Dashboard = () => {
-  const { data: dashboardData, isLoading } = useQuery({
+  const {
+    data: dashboardData,
+    isLoading,
+    refetch,
+    isFetching,
+  } = useQuery({
     queryKey: ["dashboard"],
     queryFn: dashboardAPI.getDashboardData,
     staleTime: 0,
@@ -47,27 +54,20 @@ const Dashboard = () => {
     );
   }
 
-  const stats = dashboardData?.data?.stats || {
-    totalPosts: 0,
-    scheduledPosts: 0,
-    connectedAccounts: 0,
-    totalEngagement: 0,
+  const normalize = (value) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
   };
 
-  const recentPosts = dashboardData?.data?.recentPosts || [
-    {
-      id: 1,
-      content: "Just launched our new feature!",
-      status: "published",
-      engagement: 245,
-    },
-    {
-      id: 2,
-      content: "Weekly tips for social media growth",
-      status: "scheduled",
-      engagement: 0,
-    },
-  ];
+  const statsFromApi = dashboardData?.data?.stats || {};
+  const stats = {
+    totalPosts: normalize(statsFromApi.totalPosts),
+    scheduledPosts: normalize(statsFromApi.scheduledPosts),
+    connectedAccounts: normalize(statsFromApi.connectedAccounts),
+    totalEngagement: normalize(statsFromApi.totalEngagement),
+  };
+
+  const recentPosts = dashboardData?.data?.recentPosts || [];
 
   return (
     <div className="p-6">
@@ -76,17 +76,36 @@ const Dashboard = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 fade-in">
           <div>
             <h1 className="text-4xl font-bold gradient-text">Dashboard</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-gray-700 dark:text-gray-300 mt-1">
               Welcome back! Here's what's happening today.
             </p>
           </div>
-          <Link
-            to="/posts"
-            className="btn-primary inline-flex items-center group"
-          >
-            <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" />
-            New Post
-          </Link>
+          <div className="flex gap-3">
+            <button
+              onClick={async () => {
+                try {
+                  await refetch();
+                  toast.success("Dashboard refreshed");
+                } catch (err) {
+                  toast.error("Failed to refresh dashboard");
+                }
+              }}
+              className="btn-secondary inline-flex items-center"
+              disabled={isFetching}
+            >
+              <RefreshCw
+                className={`w-4 h-4 mr-2 ${isFetching ? "animate-spin" : ""}`}
+              />
+              Refresh
+            </button>
+            <Link
+              to="/posts"
+              className="btn-primary inline-flex items-center group"
+            >
+              <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" />
+              New Post
+            </Link>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -124,7 +143,7 @@ const Dashboard = () => {
           <div className="slide-up" style={{ animationDelay: "300ms" }}>
             <StatCard
               title="Total Engagement"
-              value={stats.totalEngagement?.toLocaleString() || "0"}
+              value={stats.totalEngagement.toLocaleString()}
               icon={TrendingUp}
               trend={{ value: 8, isPositive: true }}
               color="orange"
@@ -141,12 +160,12 @@ const Dashboard = () => {
             style={{ animationDelay: "400ms" }}
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+              <h3 className="text-xl font-bold text-gray-800">
                 Recent Activity
               </h3>
               <Link
                 to="/posts"
-                className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 font-medium"
+                className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
               >
                 View All →
               </Link>
@@ -154,15 +173,15 @@ const Dashboard = () => {
             <div className="space-y-4">
               {recentPosts.length === 0 ? (
                 <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 float">
+                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-4 float">
                     <Sparkles className="w-8 h-8 text-white" />
                   </div>
-                  <p className="text-gray-500 dark:text-gray-400">
-                    No recent activity yet
+                  <p className="text-gray-500">
+                    No activity yet. Your stats are set to 0.
                   </p>
                   <Link
                     to="/posts"
-                    className="text-emerald-600 dark:text-emerald-400 text-sm hover:underline mt-2 inline-block"
+                    className="text-indigo-600 text-sm hover:underline mt-2 inline-block"
                   >
                     Create your first post
                   </Link>
@@ -171,11 +190,11 @@ const Dashboard = () => {
                 recentPosts.map((post, index) => (
                   <div
                     key={post.id}
-                    className="group flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white dark:from-slate-700/50 dark:to-slate-800/50 rounded-xl border border-gray-100 dark:border-slate-600 hover:border-emerald-200 dark:hover:border-emerald-600 hover:shadow-md transition-all duration-300"
+                    className="group flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-100 hover:border-indigo-200 hover:shadow-md transition-all duration-300"
                     style={{ animationDelay: `${500 + index * 100}ms` }}
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                      <p className="text-sm font-medium text-gray-800 truncate group-hover:text-indigo-600 transition-colors">
                         {post.content}
                       </p>
                       <div className="flex items-center gap-3 mt-1">
@@ -190,7 +209,7 @@ const Dashboard = () => {
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 ml-4">
+                    <div className="flex items-center text-sm text-gray-500 ml-4">
                       <Eye className="w-4 h-4 mr-1" />
                       <span className="font-medium">{post.engagement}</span>
                     </div>
@@ -205,51 +224,51 @@ const Dashboard = () => {
             className="card card-hover fade-in"
             style={{ animationDelay: "500ms" }}
           >
-            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-6">
               Quick Actions
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <Link
                 to="/accounts"
-                className="group p-5 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800 hover:border-emerald-300 dark:hover:border-emerald-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-center"
+                className="group p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100 hover:border-blue-300 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-center"
               >
-                <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform">
+                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
                   <Users className="w-7 h-7 text-white" />
                 </div>
-                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <span className="text-sm font-semibold text-gray-700">
                   Connect Accounts
                 </span>
               </Link>
               <Link
                 to="/analytics"
-                className="group p-5 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-100 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-center"
+                className="group p-5 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-100 hover:border-green-300 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-center"
               >
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
+                <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-green-500/30 group-hover:scale-110 transition-transform">
                   <BarChart3 className="w-7 h-7 text-white" />
                 </div>
-                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <span className="text-sm font-semibold text-gray-700">
                   View Analytics
                 </span>
               </Link>
               <Link
                 to="/links"
-                className="group p-5 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-100 dark:border-purple-800 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-center"
+                className="group p-5 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-100 hover:border-purple-300 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-center"
               >
                 <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform">
                   <Link2 className="w-7 h-7 text-white" />
                 </div>
-                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <span className="text-sm font-semibold text-gray-700">
                   Manage Links
                 </span>
               </Link>
               <Link
                 to="/teams"
-                className="group p-5 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl border border-orange-100 dark:border-orange-800 hover:border-orange-300 dark:hover:border-orange-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-center"
+                className="group p-5 bg-gradient-to-br from-orange-50 to-red-50 rounded-xl border border-orange-100 hover:border-orange-300 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-center"
               >
                 <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-orange-500/30 group-hover:scale-110 transition-transform">
                   <Users className="w-7 h-7 text-white" />
                 </div>
-                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <span className="text-sm font-semibold text-gray-700">
                   Team
                 </span>
               </Link>

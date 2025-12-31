@@ -1,12 +1,11 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { useTheme, themePresets } from "../hooks/useTheme";
+import { useTheme } from "../hooks/useTheme";
 import {
   LayoutDashboard,
   Send,
   Link2,
-  Link2 as LinkIcon,
   Users,
   BarChart3,
   Calendar,
@@ -16,19 +15,12 @@ import {
   Menu,
   X,
   ChevronLeft,
-  ChevronDown,
   Sparkles,
   Bell,
   User,
   Moon,
   Sun,
-  Palette,
-  Edit,
-  Camera,
-  Mail,
-  Shield,
-  Check,
-  AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -46,78 +38,88 @@ const navItems = [
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-  const [notificationDropdownOpen, setNotificationDropdownOpen] =
-    useState(false);
-  const [themeDropdownOpen, setThemeDropdownOpen] = useState(false);
-  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
-  const profileRef = useRef(null);
-  const notificationRef = useRef(null);
-  const themeRef = useRef(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [isRefreshingNotifs, setIsRefreshingNotifs] = useState(false);
+  const [notifUpdatedAt, setNotifUpdatedAt] = useState(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { theme, setTheme, isDark, preset, presets } = useTheme();
+  const { theme, toggleTheme, isDark, accent, setAccent, accents } = useTheme();
 
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (profileRef.current && !profileRef.current.contains(event.target)) {
-        setProfileDropdownOpen(false);
-      }
-      if (
-        notificationRef.current &&
-        !notificationRef.current.contains(event.target)
-      ) {
-        setNotificationDropdownOpen(false);
-      }
-      if (themeRef.current && !themeRef.current.contains(event.target)) {
-        setThemeDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const accentBackgrounds = {
+    emerald: isDark
+      ? "from-black via-emerald-950 to-black"
+      : "from-emerald-50 via-white to-emerald-100",
+    ocean: isDark
+      ? "from-slate-950 via-slate-900 to-sky-950"
+      : "from-sky-50 via-white to-cyan-100",
+    sunset: isDark
+      ? "from-slate-950 via-fuchsia-950 to-orange-900"
+      : "from-orange-50 via-rose-50 to-amber-100",
+  };
+
+  const iconTone = isDark ? "text-emerald-100" : "text-emerald-700";
+  const panelBg = isDark
+    ? "bg-slate-900 border border-emerald-800"
+    : "bg-white border border-emerald-200 shadow-lg";
 
   const handleLogout = () => {
-    setLogoutConfirmOpen(true);
+    setShowLogoutModal(true);
   };
 
   const confirmLogout = () => {
+    setShowLogoutModal(false);
     logout();
     toast.success("Logged out successfully");
     navigate("/login");
-    setLogoutConfirmOpen(false);
+  };
+
+  const handleRefreshNotifications = async () => {
+    setIsRefreshingNotifs(true);
+    try {
+      // Placeholder simulated notifications; replace with API when available
+      const simulated = [
+        {
+          id: "notif-1",
+          title: "New comment on your post",
+          body: "" + "Someone engaged with your latest post.",
+          time: "Just now",
+        },
+        {
+          id: "notif-2",
+          title: "Team invitation accepted",
+          body: "Alex joined your team.",
+          time: "5m ago",
+        },
+      ];
+      setNotifications(simulated);
+      setNotifUpdatedAt(new Date().toISOString());
+      toast.success("Notifications refreshed");
+    } catch (err) {
+      toast.error("Failed to refresh notifications");
+    } finally {
+      setIsRefreshingNotifs(false);
+    }
+  };
+
+  const handleMarkAllRead = () => {
+    setNotifications([]);
+    setNotifUpdatedAt(new Date().toISOString());
   };
 
   const isActive = (path) => location.pathname === path;
 
-  // Sample notifications
-  const notifications = [
-    {
-      id: 1,
-      message: "Your post was published successfully",
-      time: "2 min ago",
-      read: false,
-    },
-    {
-      id: 2,
-      message: "New follower on Instagram",
-      time: "1 hour ago",
-      read: false,
-    },
-    {
-      id: 3,
-      message: "Weekly analytics report ready",
-      time: "3 hours ago",
-      read: true,
-    },
-  ];
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 transition-colors duration-300">
+    <div
+      className={`min-h-screen bg-gradient-to-br ${
+        accentBackgrounds[accent] || accentBackgrounds.emerald
+      } ${
+        isDark ? "text-white" : "text-slate-900"
+      } transition-colors duration-300`}
+    >
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -136,7 +138,7 @@ export default function Layout({ children }) {
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200/50 dark:border-slate-700/50">
           {!collapsed && (
             <Link to="/dashboard" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-lime-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold gradient-text">LinkHub</span>
@@ -144,7 +146,7 @@ export default function Layout({ children }) {
           )}
           {collapsed && (
             <Link to="/dashboard" className="mx-auto">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-lime-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
             </Link>
@@ -169,7 +171,7 @@ export default function Layout({ children }) {
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
                   active
-                    ? "bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-500/30"
+                    ? "bg-gradient-to-r from-emerald-600 to-lime-500 text-white shadow-lg shadow-emerald-500/30"
                     : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-white"
                 }`}
               >
@@ -202,7 +204,7 @@ export default function Layout({ children }) {
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200/50 dark:border-slate-700/50 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
           {!collapsed ? (
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center text-white font-bold">
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-lime-500 rounded-xl flex items-center justify-center text-white font-bold">
                 {user?.name?.charAt(0)?.toUpperCase() || "U"}
               </div>
               <div className="flex-1 min-w-0">
@@ -216,7 +218,7 @@ export default function Layout({ children }) {
             </div>
           ) : (
             <div className="flex justify-center mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center text-white font-bold">
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-lime-500 rounded-xl flex items-center justify-center text-white font-bold">
                 {user?.name?.charAt(0)?.toUpperCase() || "U"}
               </div>
             </div>
@@ -252,211 +254,260 @@ export default function Layout({ children }) {
             {/* Page title could go here */}
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Theme Selector */}
-            <div className="relative" ref={themeRef}>
-              <button
-                onClick={() => setThemeDropdownOpen(!themeDropdownOpen)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors"
-                title="Change theme"
-              >
-                <Palette className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-              </button>
-              {themeDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-200 dark:border-slate-700 py-2 z-50">
-                  <div className="px-4 py-2 border-b border-gray-200 dark:border-slate-700">
-                    <p className="text-sm font-semibold text-gray-800 dark:text-white">
-                      Select Theme
-                    </p>
-                  </div>
-                  {Object.entries(presets).map(([key, value]) => (
-                    <button
-                      key={key}
-                      onClick={() => {
-                        setTheme(key);
-                        setThemeDropdownOpen(false);
-                      }}
-                      className={`w-full px-4 py-2.5 flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors ${
-                        preset === key ? "bg-gray-100 dark:bg-slate-700" : ""
-                      }`}
-                    >
-                      <div
-                        className="w-6 h-6 rounded-full border-2 border-white shadow-md"
-                        style={{
-                          background: `linear-gradient(135deg, ${value.primary}, ${value.secondary})`,
-                        }}
-                      />
-                      <span className="text-sm text-gray-700 dark:text-gray-300 capitalize">
-                        {value.name}
-                      </span>
-                      {preset === key && (
-                        <Check className="w-4 h-4 text-emerald-500 ml-auto" />
-                      )}
-                    </button>
-                  ))}
-                  <div className="border-t border-gray-200 dark:border-slate-700 mt-2 pt-2">
-                    <button
-                      onClick={() => {
-                        setTheme(isDark ? "light" : preset);
-                        setThemeDropdownOpen(false);
-                      }}
-                      className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
-                    >
-                      {isDark ? (
-                        <Sun className="w-5 h-5 text-yellow-500" />
-                      ) : (
-                        <Moon className="w-5 h-5 text-gray-600" />
-                      )}
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
-                        {isDark ? "Light Mode" : "Dark Mode"}
-                      </span>
-                    </button>
-                  </div>
-                </div>
+          <div className="relative flex items-center gap-3">
+            {/* Theme toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 hover:bg-emerald-900/20 dark:hover:bg-emerald-900/40 rounded-xl transition-colors"
+              title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {isDark ? (
+                <Sun className="w-5 h-5 text-amber-400" />
+              ) : (
+                <Moon className="w-5 h-5 text-emerald-600" />
               )}
-            </div>
+            </button>
 
             {/* Notifications */}
-            <div className="relative" ref={notificationRef}>
+            <div className="relative">
               <button
-                onClick={() =>
-                  setNotificationDropdownOpen(!notificationDropdownOpen)
-                }
-                className="relative p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors"
+                onClick={() => setShowNotifications((v) => !v)}
+                className="relative p-2 hover:bg-emerald-900/20 dark:hover:bg-emerald-900/40 rounded-xl transition-colors"
               >
-                <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                {unreadCount > 0 && (
-                  <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                    {unreadCount}
-                  </span>
-                )}
+                <Bell className={`w-5 h-5 ${iconTone}`} />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               </button>
-              {notificationDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-200 dark:border-slate-700 py-2 z-50">
-                  <div className="px-4 py-2 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
-                    <p className="text-sm font-semibold text-gray-800 dark:text-white">
+              {showNotifications && (
+                <div
+                  className={`absolute right-0 mt-2 w-72 rounded-2xl shadow-xl p-3 z-50 ${panelBg}`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span
+                      className={`text-sm font-semibold ${
+                        isDark ? "text-white" : "text-slate-800"
+                      }`}
+                    >
                       Notifications
-                    </p>
-                    <button className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline">
+                    </span>
+                    <button
+                      onClick={handleRefreshNotifications}
+                      className={`text-xs flex items-center gap-1 ${
+                        isDark
+                          ? "text-emerald-300 hover:text-emerald-200"
+                          : "text-emerald-700 hover:text-emerald-900"
+                      }`}
+                    >
+                      {isRefreshingNotifs ? (
+                        <>
+                          <RefreshCw className="w-3 h-3 animate-spin" />{" "}
+                          Refreshing
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="w-3 h-3" /> Refresh
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <div
+                    className={`space-y-2 text-sm max-h-64 overflow-auto pr-1 ${
+                      isDark ? "text-gray-200" : "text-slate-700"
+                    }`}
+                  >
+                    {notifications.length === 0 ? (
+                      <div
+                        className={`p-2 rounded-xl border ${
+                          isDark
+                            ? "bg-emerald-900/40 border-emerald-800 text-emerald-100"
+                            : "bg-emerald-50 border-emerald-200 text-emerald-700"
+                        }`}
+                      >
+                        No new notifications
+                      </div>
+                    ) : (
+                      notifications.map((n) => (
+                        <div
+                          key={n.id}
+                          className={`p-3 rounded-xl border ${
+                            isDark
+                              ? "bg-emerald-900/40 border-emerald-800"
+                              : "bg-emerald-50 border-emerald-200"
+                          }`}
+                        >
+                          <div
+                            className={`font-semibold text-sm ${
+                              isDark ? "text-white" : "text-slate-900"
+                            }`}
+                          >
+                            {n.title}
+                          </div>
+                          <div
+                            className={`text-xs mt-1 ${
+                              isDark ? "text-emerald-100" : "text-emerald-800"
+                            }`}
+                          >
+                            {n.body}
+                          </div>
+                          <div
+                            className={`text-[11px] mt-1 ${
+                              isDark ? "text-emerald-300" : "text-emerald-700"
+                            }`}
+                          >
+                            {n.time}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  <div
+                    className={`flex items-center justify-between mt-3 text-[11px] ${
+                      isDark ? "text-emerald-300" : "text-emerald-700"
+                    }`}
+                  >
+                    <span>
+                      {notifUpdatedAt
+                        ? `Updated ${new Date(
+                            notifUpdatedAt
+                          ).toLocaleTimeString()}`
+                        : "Not refreshed yet"}
+                    </span>
+                    <button
+                      onClick={handleMarkAllRead}
+                      className={`hover:underline ${
+                        isDark ? "text-emerald-200" : "text-emerald-800"
+                      }`}
+                    >
                       Mark all read
                     </button>
                   </div>
-                  <div className="max-h-64 overflow-y-auto">
-                    {notifications.map((notif) => (
-                      <div
-                        key={notif.id}
-                        className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors cursor-pointer ${
-                          !notif.read
-                            ? "bg-emerald-50 dark:bg-emerald-900/20"
-                            : ""
-                        }`}
-                      >
-                        <p className="text-sm text-gray-800 dark:text-gray-200">
-                          {notif.message}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          {notif.time}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="px-4 py-2 border-t border-gray-200 dark:border-slate-700">
-                    <Link
-                      to="/notifications"
-                      className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline"
-                    >
-                      View all notifications
-                    </Link>
-                  </div>
+                  <button
+                    onClick={() => setShowNotifications(false)}
+                    className="mt-3 w-full py-2 text-xs text-emerald-200 hover:text-white"
+                  >
+                    Close
+                  </button>
                 </div>
               )}
             </div>
 
+            {/* Settings */}
             <Link
               to="/settings/privacy"
-              className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors"
+              className="p-2 hover:bg-emerald-900/20 dark:hover:bg-emerald-900/40 rounded-xl transition-colors"
             >
-              <Settings className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              <Settings className={`w-5 h-5 ${iconTone}`} />
             </Link>
 
-            {/* Profile Dropdown */}
-            <div className="relative" ref={profileRef}>
+            {/* Profile dropdown */}
+            <div className="relative">
               <button
-                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                className="hidden sm:flex items-center gap-2 pl-3 border-l border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg py-1 pr-2 transition-colors"
+                onClick={() => setShowProfileMenu((v) => !v)}
+                className="flex items-center gap-2 pl-3 border-l border-emerald-800/60"
               >
-                <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">
+                <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-emerald-400 rounded-lg flex items-center justify-center text-white text-sm font-bold">
                   {user?.name?.charAt(0)?.toUpperCase() || "U"}
                 </div>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <span className="hidden sm:block text-sm font-medium text-emerald-50">
                   {user?.name?.split(" ")[0] || "User"}
                 </span>
-                <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               </button>
-              {profileDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-200 dark:border-slate-700 py-2 z-50">
-                  <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-700">
-                    <p className="text-sm font-semibold text-gray-800 dark:text-white">
-                      {user?.name || "User"}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {user?.email || ""}
-                    </p>
+              {showProfileMenu && (
+                <div
+                  className={`absolute right-0 mt-2 w-56 rounded-2xl shadow-xl p-3 z-50 ${panelBg}`}
+                >
+                  <div
+                    className={`text-xs mb-2 ${
+                      isDark ? "text-emerald-200" : "text-emerald-700"
+                    }`}
+                  >
+                    Signed in as
                   </div>
-                  <div className="py-1">
+                  <div
+                    className={`text-sm font-semibold mb-3 truncate ${
+                      isDark ? "text-white" : "text-slate-900"
+                    }`}
+                  >
+                    {user?.email || "user@example.com"}
+                  </div>
+                  <div
+                    className={`space-y-1 text-sm ${
+                      isDark ? "text-emerald-50" : "text-emerald-800"
+                    }`}
+                  >
                     <Link
                       to="/settings/privacy"
-                      onClick={() => setProfileDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                      className={`block px-3 py-2 rounded-xl ${
+                        isDark
+                          ? "hover:bg-emerald-900/40"
+                          : "hover:bg-emerald-100"
+                      }`}
                     >
-                      <Edit className="w-4 h-4" />
                       Edit Profile
                     </Link>
                     <Link
-                      to="/settings/privacy"
-                      onClick={() => setProfileDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                      to="/bio"
+                      className="block px-3 py-2 rounded-xl hover:bg-emerald-900/40"
                     >
-                      <Camera className="w-4 h-4" />
-                      Change Picture
+                      Manage Bio Links
                     </Link>
                     <Link
-                      to="/bio"
-                      onClick={() => setProfileDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                      to="/links"
+                      className="block px-3 py-2 rounded-xl hover:bg-emerald-900/40"
                     >
-                      <LinkIcon className="w-4 h-4" />
                       Manage Links
                     </Link>
                     <Link
-                      to="/settings/privacy"
-                      onClick={() => setProfileDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                      to="/accounts"
+                      className="block px-3 py-2 rounded-xl hover:bg-emerald-900/40"
                     >
-                      <Mail className="w-4 h-4" />
-                      Change Email
-                    </Link>
-                    <Link
-                      to="/settings/privacy"
-                      onClick={() => setProfileDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
-                    >
-                      <Shield className="w-4 h-4" />
-                      Privacy & Security
+                      Social Accounts
                     </Link>
                   </div>
-                  <div className="border-t border-gray-200 dark:border-slate-700 pt-1">
-                    <button
-                      onClick={() => {
-                        setProfileDropdownOpen(false);
-                        handleLogout();
-                      }}
-                      className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  <div className="mt-3 border-t border-emerald-800/60 pt-3 space-y-3">
+                    <div
+                      className={`text-xs ${
+                        isDark ? "text-emerald-200" : "text-emerald-800"
+                      }`}
                     >
-                      <LogOut className="w-4 h-4" />
-                      Logout
-                    </button>
+                      Theme & Accent
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          toggleTheme();
+                          setShowProfileMenu(false);
+                        }}
+                        className={`flex-1 px-3 py-2 rounded-xl font-medium ${
+                          isDark
+                            ? "bg-emerald-900/60 text-emerald-100 hover:bg-emerald-800/80"
+                            : "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+                        }`}
+                      >
+                        {isDark ? "Light" : "Dark"}
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {accents.map((opt) => (
+                        <button
+                          key={opt.id}
+                          onClick={() => setAccent(opt.id)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
+                            accent === opt.id
+                              ? "border-[var(--accent-from)] bg-[var(--accent-ghost)] text-[var(--accent-to)]"
+                              : "border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/40"
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
+                  <button
+                    onClick={handleLogout}
+                    className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm"
+                  >
+                    <LogOut className="w-4 h-4" /> Logout
+                  </button>
                 </div>
               )}
             </div>
@@ -465,41 +516,66 @@ export default function Layout({ children }) {
 
         {/* Page content */}
         <main>{children}</main>
-      </div>
 
-      {/* Logout Confirmation Modal */}
-      {logoutConfirmOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
-            <div className="p-6">
-              <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
+        {/* Logout Confirmation Modal */}
+        {showLogoutModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+            <div
+              className={`${
+                isDark
+                  ? "bg-slate-900 border-emerald-800"
+                  : "bg-white border-emerald-200"
+              } border-2 rounded-2xl shadow-2xl p-6 max-w-md w-full animate-in fade-in zoom-in duration-200`}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl">
+                  <LogOut className="w-6 h-6 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <h3
+                    className={`text-xl font-bold ${
+                      isDark ? "text-white" : "text-slate-900"
+                    }`}
+                  >
+                    Confirm Logout
+                  </h3>
+                  <p
+                    className={`text-sm ${
+                      isDark ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  >
+                    Are you sure you want to sign out?
+                  </p>
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-2">
-                Confirm Logout
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-center mb-6">
-                Are you sure you want to logout? You'll need to sign in again to
-                access your account.
+              <p
+                className={`mb-6 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+              >
+                You'll need to sign in again to access your account.
               </p>
               <div className="flex gap-3">
                 <button
-                  onClick={() => setLogoutConfirmOpen(false)}
-                  className="flex-1 px-4 py-3 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+                  onClick={() => setShowLogoutModal(false)}
+                  className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all ${
+                    isDark
+                      ? "bg-slate-800 hover:bg-slate-700 text-white border border-slate-700"
+                      : "bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300"
+                  }`}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmLogout}
-                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors"
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
                 >
-                  Yes, Logout
+                  <LogOut className="w-4 h-4" />
+                  Logout
                 </button>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

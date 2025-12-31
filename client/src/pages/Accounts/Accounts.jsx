@@ -19,7 +19,6 @@ import {
   Sparkles,
   Plus,
   Info,
-  AlertTriangle,
 } from "lucide-react";
 
 const providers = [
@@ -79,10 +78,10 @@ export default function Accounts() {
   const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [demoHandle, setDemoHandle] = useState("");
-  const [disconnectConfirmOpen, setDisconnectConfirmOpen] = useState(false);
-  const [providerToDisconnect, setProviderToDisconnect] = useState(null);
+  const [demoUrl, setDemoUrl] = useState("");
+  const [disconnectingProvider, setDisconnectingProvider] = useState(null);
 
-  const { data, isLoading, isError, refetch } = useQuery({
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["social_accounts"],
     queryFn: async () => {
       const res = await socialAPI.list();
@@ -92,30 +91,32 @@ export default function Accounts() {
   });
 
   const disconnectMutation = useMutation({
-    mutationFn: (provider) => socialAPI.disconnect(provider),
-    onSuccess: () => {
-      qc.invalidateQueries(["social_accounts"]);
-      toast.success("Account disconnected");
-      setDisconnectConfirmOpen(false);
-      setProviderToDisconnect(null);
+    mutationFn: async (provider) => {
+      setDisconnectingProvider(provider);
+      try {
+        const result = await socialAPI.disconnect(provider);
+        return { result, provider };
+      } catch (error) {
+        setDisconnectingProvider(null);
+        throw error;
+      }
     },
-    onError: () => {
-      toast.error("Failed to disconnect account");
-      setDisconnectConfirmOpen(false);
-      setProviderToDisconnect(null);
+    onSuccess: ({ provider }) => {
+      setDisconnectingProvider(null);
+      qc.invalidateQueries(["social_accounts"]);
+      qc.invalidateQueries(["analytics", "aggregate"]);
+      toast.success("Account disconnected successfully");
+    },
+    onError: (error, provider) => {
+      console.error("Disconnect error:", error);
+      setDisconnectingProvider(null);
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to disconnect account"
+      );
     },
   });
-
-  const handleDisconnectClick = (provider) => {
-    setProviderToDisconnect(provider);
-    setDisconnectConfirmOpen(true);
-  };
-
-  const confirmDisconnect = () => {
-    if (providerToDisconnect) {
-      disconnectMutation.mutate(providerToDisconnect.id);
-    }
-  };
 
   const syncMutation = useMutation({
     mutationFn: (provider) => socialAPI.refresh(provider),
@@ -124,11 +125,15 @@ export default function Accounts() {
       toast.success("Account synced");
     },
     onError: () => toast.error("Failed to sync account"),
+    onSettled: () => qc.invalidateQueries(["analytics", "aggregate"]),
   });
 
   // Demo mode - connect with fake credentials
   const connectDemoMutation = useMutation({
     mutationFn: async ({ provider, handle }) => {
+      if (!demoUrl.trim()) {
+        throw new Error("Please paste the profile link to connect.");
+      }
       // Use the callback endpoint directly with demo tokens
       const response = await socialAPI.callback(provider, {
         accessToken: `demo_access_${Date.now()}`,
@@ -139,7 +144,7 @@ export default function Accounts() {
           provider.charAt(0).toUpperCase() + provider.slice(1)
         } Account`,
         profileData: {
-          url: `https://${provider}.com/${handle || `demo_${provider}`}`,
+          url: demoUrl.trim(),
           followers: Math.floor(Math.random() * 10000),
           bio: "Demo account for testing",
         },
@@ -151,11 +156,14 @@ export default function Accounts() {
       toast.success("Demo account connected!");
       setDemoModalOpen(false);
       setDemoHandle("");
+      setDemoUrl("");
       setSelectedProvider(null);
     },
     onError: (err) => {
       toast.error(
-        err.response?.data?.message || "Failed to connect demo account"
+        err.message ||
+          err.response?.data?.message ||
+          "Failed to connect demo account"
       );
     },
   });
@@ -225,9 +233,12 @@ export default function Accounts() {
           <button
             onClick={() => refetch()}
             className="btn-secondary inline-flex items-center"
+            disabled={isFetching}
           >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
+            <RefreshCw
+              className={`w-4 h-4 mr-2 ${isFetching ? "animate-spin" : ""}`}
+            />
+            {isFetching ? "Refreshing" : "Refresh"}
           </button>
         </div>
 
@@ -367,10 +378,28 @@ export default function Accounts() {
                           Sync
                         </button>
                         <button
-                          onClick={() => handleDisconnectClick(provider)}
-                          className="flex-1 py-2 px-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-1"
+                          onClick={() => {
+                            const confirmed = window.confirm(
+                              "Disconnect this account? You can reconnect anytime."
+                            );
+                            if (confirmed) {
+                              disconnectMutation.mutate(provider.id);
+                            }
+                          }}
+                          disabled={
+                            disconnectMutation.isPending ||
+                            disconnectingProvider === provider.id
+                          }
+                          className="flex-1 py-2 px-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-1 disabled:opacity-60"
                         >
-                          <Unlink className="w-4 h-4" />
+                          <Unlink
+                            className={`w-4 h-4 ${
+                              disconnectMutation.isPending &&
+                              disconnectingProvider === provider.id
+                                ? "animate-spin"
+                                : ""
+                            }`}
+                          />
                           Disconnect
                         </button>
                         {account.profileData?.url && (
@@ -378,17 +407,18 @@ export default function Accounts() {
                             href={account.profileData.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors"
+                            className="p-2 text-sm bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-200 rounded-xl border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors flex items-center justify-center gap-1"
+                            title="Visit profile"
                           >
-                            <ExternalLink className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                            <ExternalLink className="w-4 h-4" />
                           </a>
                         )}
                       </div>
                     </div>
                   ) : (
-                    <div className="text-center py-4">
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                        Not connected
+                    <div className="text-center py-4 space-y-3">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Paste your profile link to connect
                       </p>
                       <button
                         onClick={() => handleConnect(provider)}
@@ -452,6 +482,19 @@ export default function Accounts() {
                     className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Profile Link (required)
+                  </label>
+                  <input
+                    type="url"
+                    value={demoUrl}
+                    onChange={(e) => setDemoUrl(e.target.value)}
+                    placeholder={`https://${selectedProvider.id}.com/you`}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    required
+                  />
+                </div>
               </div>
 
               <div className="flex gap-3 mt-6">
@@ -475,62 +518,6 @@ export default function Accounts() {
                     <>
                       <Link2 className="w-4 h-4" />
                       Connect Demo
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Disconnect Confirmation Modal */}
-        {disconnectConfirmOpen && providerToDisconnect && (
-          <div
-            className="modal-overlay"
-            onClick={() => setDisconnectConfirmOpen(false)}
-          >
-            <div
-              className="modal-content max-w-md"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex flex-col items-center text-center mb-6">
-                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
-                  <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                  Disconnect {providerToDisconnect.name}?
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Are you sure you want to disconnect your{" "}
-                  {providerToDisconnect.name} account? You'll need to reconnect
-                  it to post or view analytics from this platform.
-                </p>
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    setDisconnectConfirmOpen(false);
-                    setProviderToDisconnect(null);
-                  }}
-                  className="flex-1 btn-secondary"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmDisconnect}
-                  disabled={disconnectMutation.isLoading}
-                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
-                >
-                  {disconnectMutation.isLoading ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      Disconnecting...
-                    </>
-                  ) : (
-                    <>
-                      <Unlink className="w-4 h-4" />
-                      Yes, Disconnect
                     </>
                   )}
                 </button>

@@ -1,7 +1,11 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 
-export default function ShareBioLink({ slug, title }) {
+export default function ShareBioLink({ page }) {
   const [copied, setCopied] = useState(false);
+
+  const slug = page?.slug || "";
+  const title = page?.title || "";
 
   const bioUrl = `${window.location.origin}/p/${slug}`;
 
@@ -12,6 +16,38 @@ export default function ShareBioLink({ slug, title }) {
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error("Failed to copy", err);
+    }
+  };
+
+  const handleExport = () => {
+    if (!page) return;
+    try {
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        page: {
+          id: page._id,
+          slug: page.slug,
+          title: page.title,
+          description: page.description,
+          links: page.links || [],
+          views: page.views || 0,
+        },
+      };
+
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `linkhub-bio-${page.slug || "page"}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("Bio page exported");
+    } catch (err) {
+      toast.error("Failed to export bio page");
     }
   };
 
@@ -54,10 +90,18 @@ export default function ShareBioLink({ slug, title }) {
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <h3 className="text-sm font-medium text-gray-700 mb-3">
-        Share Your Bio Page
-      </h3>
+    <div className="bg-white rounded-lg shadow p-4 space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-medium text-gray-700">
+          Share Your Bio Page
+        </h3>
+        <button
+          onClick={handleExport}
+          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow hover:shadow-lg transition"
+        >
+          Export JSON
+        </button>
+      </div>
 
       {/* URL Display and Copy */}
       <div className="flex items-center gap-2 mb-4">

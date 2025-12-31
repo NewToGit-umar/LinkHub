@@ -31,21 +31,19 @@ const StatCard = ({
   };
 
   return (
-    <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 dark:border-slate-700/50 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group">
+    <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group">
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-            {title}
-          </p>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+          <p className="text-sm font-medium text-gray-500">{title}</p>
+          <p className="text-3xl font-bold text-gray-900 mt-2 group-hover:text-indigo-600 transition-colors">
             {value}
           </p>
           {trend && (
             <div
               className={`inline-flex items-center mt-3 px-2.5 py-1 rounded-full text-xs font-medium ${
                 trend.isPositive
-                  ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                  : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                  ? "bg-green-100 text-green-700"
+                  : "bg-red-100 text-red-700"
               }`}
             >
               {trend.isPositive ? (

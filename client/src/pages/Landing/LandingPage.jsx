@@ -106,16 +106,16 @@ export default function LandingPage() {
   const [darkPreview, setDarkPreview] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-black via-emerald-950 to-black overflow-hidden">
       {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-emerald-700 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
         <div
-          className="absolute top-1/3 -left-40 w-96 h-96 bg-green-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"
+          className="absolute top-1/3 -left-40 w-96 h-96 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"
           style={{ animationDelay: "1s" }}
         ></div>
         <div
-          className="absolute bottom-0 right-1/3 w-96 h-96 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-pulse"
+          className="absolute bottom-0 right-1/3 w-96 h-96 bg-lime-500 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-pulse"
           style={{ animationDelay: "2s" }}
         ></div>
       </div>
@@ -124,7 +124,7 @@ export default function LandingPage() {
       <nav className="relative z-50 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-lime-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <span className="text-2xl font-bold text-white">LinkHub</span>
@@ -138,7 +138,7 @@ export default function LandingPage() {
             </Link>
             <Link
               to="/register"
-              className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-medium rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all"
+              className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-lime-500 text-black font-medium rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all"
             >
               Get Started Free
             </Link>
@@ -158,7 +158,7 @@ export default function LandingPage() {
               </div>
               <h1 className="text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
                 All Your Links,
-                <span className="bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-emerald-300 to-lime-300 bg-clip-text text-transparent">
                   {" "}
                   One Powerful Hub
                 </span>
@@ -170,7 +170,7 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link
                   to="/register"
-                  className="group px-8 py-4 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-semibold rounded-xl shadow-lg shadow-emeraldd-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                  className="group px-8 py-4 bg-gradient-to-r from-emerald-600 to-lime-500 text-black font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
                 >
                   Start for Free
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -233,13 +233,13 @@ export default function LandingPage() {
                     className={`rounded-[2.5rem] overflow-hidden ${
                       darkPreview
                         ? "bg-gray-800"
-                        : "bg-gradient-to-br from-indigo-50 to-purple-50"
+                        : "bg-gradient-to-br from-emerald-50 to-lime-50"
                     }`}
                   >
                     <div className="pt-12 pb-8 px-6">
                       {/* Profile header */}
                       <div className="text-center mb-6">
-                        <div className="w-20 h-20 mx-auto bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg mb-4">
+                        <div className="w-20 h-20 mx-auto bg-gradient-to-br from-emerald-600 to-lime-500 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg mb-4">
                           {sampleProfile.avatar}
                         </div>
                         <h3
@@ -346,8 +346,8 @@ export default function LandingPage() {
                             key={i}
                             className={`p-3 rounded-xl flex items-center gap-3 transition-all hover:scale-[1.02] cursor-pointer ${
                               darkPreview
-                                ? "bg-gradient-to-r from-indigo-600/50 to-purple-600/50 hover:from-indigo-600 hover:to-purple-600"
-                                : "bg-gradient-to-r from-indigo-500 to-purple-500 shadow-md"
+                                ? "bg-gradient-to-r from-emerald-700/60 to-lime-600/60 hover:from-emerald-700 hover:to-lime-600"
+                                : "bg-gradient-to-r from-emerald-700/50 to-lime-600/50 hover:from-emerald-700 hover:to-lime-600"
                             }`}
                           >
                             <link.icon className="w-5 h-5 text-white" />
@@ -429,7 +429,7 @@ export default function LandingPage() {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-white mb-4">
               Everything You Need to{" "}
-              <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-emerald-300 to-lime-300 bg-clip-text text-transparent">
                 Grow Online
               </span>
             </h2>
@@ -463,7 +463,7 @@ export default function LandingPage() {
       {/* CTA Section */}
       <section className="relative z-10 px-6 py-24">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-3xl p-12 shadow-2xl">
+          <div className="bg-gradient-to-br from-emerald-700 to-lime-500 rounded-3xl p-12 shadow-2xl">
             <h2 className="text-4xl font-bold text-white mb-4">
               Ready to Level Up Your Online Presence?
             </h2>
@@ -473,7 +473,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/register"
-                className="group px-8 py-4 bg-white text-indigo-600 font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                className="group px-8 py-4 bg-white text-emerald-700 font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
               >
                 Get Started Free
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -503,7 +503,7 @@ export default function LandingPage() {
       <footer className="relative z-10 px-6 py-12 border-t border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-lime-500 rounded-lg flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-white" />
             </div>
             <span className="text-white font-semibold">LinkHub</span>
