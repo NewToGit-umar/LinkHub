@@ -27,7 +27,7 @@ const sampleProfile = {
   name: "Umar Farooq",
   username: "umarfarooq",
   bio: "Digital Creator | Marketing Expert | Helping brands grow online 🚀",
-  avatar: "UF",
+  avatar: "/umar-profile.png",
   links: [
     { title: "My Portfolio", url: "#", clicks: 2847, icon: Globe },
     { title: "Latest Blog Post", url: "#", clicks: 1523, icon: Link2 },
@@ -238,8 +238,12 @@ export default function LandingPage() {
                     <div className="pt-12 pb-8 px-6">
                       {/* Profile header */}
                       <div className="text-center mb-6">
-                        <div className="w-20 h-20 mx-auto bg-gradient-to-br from-emerald-600 to-lime-500 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg mb-4">
-                          {sampleProfile.avatar}
+                        <div className="w-20 h-20 mx-auto rounded-full shadow-lg mb-4 overflow-hidden">
+                          <img
+                            src={sampleProfile.avatar}
+                            alt={sampleProfile.name}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
                         <h3
                           className={`text-xl font-bold ${
