@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Sparkles,
   Link2,
   BarChart3,
   Users,
@@ -25,10 +24,10 @@ import {
 
 // Sample profile data for demo
 const sampleProfile = {
-  name: "Sarah Johnson",
-  username: "sarahjohnson",
+  name: "Umar Farooq",
+  username: "umarfarooq",
   bio: "Digital Creator | Marketing Expert | Helping brands grow online 🚀",
-  avatar: "SJ",
+  avatar: "UF",
   links: [
     { title: "My Portfolio", url: "#", clicks: 2847, icon: Globe },
     { title: "Latest Blog Post", url: "#", clicks: 1523, icon: Link2 },
@@ -125,7 +124,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-lime-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
-              <Sparkles className="w-5 h-5 text-white" />
+              <Link2 className="w-5 h-5 text-white" />
             </div>
             <span className="text-2xl font-bold text-white">LinkHub</span>
           </Link>
@@ -504,32 +503,32 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-lime-500 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
+              <Link2 className="w-4 h-4 text-white" />
             </div>
             <span className="text-white font-semibold">LinkHub</span>
           </div>
           <p className="text-gray-500 text-sm">
-            © 2025 LinkHub. All rights reserved.
+            © 2026 LinkHub. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
-            <a
-              href="#"
+            <Link
+              to="/privacy"
               className="text-gray-400 hover:text-white transition-colors text-sm"
             >
               Privacy
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="/terms"
               className="text-gray-400 hover:text-white transition-colors text-sm"
             >
               Terms
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="/contact"
               className="text-gray-400 hover:text-white transition-colors text-sm"
             >
               Contact
-            </a>
+            </Link>
           </div>
         </div>
       </footer>

@@ -14,7 +14,7 @@ import {
   Eye,
   Calendar,
   ChevronRight,
-  Sparkles,
+  Link2,
   Ban,
   Trash2,
 } from "lucide-react";
@@ -129,7 +129,7 @@ export default function Posts() {
         ) : posts.length === 0 ? (
           <div className="card text-center py-16 fade-in">
             <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-6 float">
-              <Sparkles className="w-10 h-10 text-white" />
+              <Link2 className="w-10 h-10 text-white" />
             </div>
             <h3 className="text-2xl font-bold text-gray-800 mb-2">
               No posts yet

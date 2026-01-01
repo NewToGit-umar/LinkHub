@@ -2,7 +2,6 @@ import User from '../models/User.js'
 import Post from '../models/Post.js'
 import SocialAccount from '../models/SocialAccount.js'
 import BioPage from '../models/BioPage.js'
-import Link from '../models/Link.js'
 import Team from '../models/Team.js'
 import Notification from '../models/Notification.js'
 import Analytics from '../models/Analytics.js'
@@ -19,13 +18,12 @@ export async function exportUserData(req, res) {
     // Log the data export request
     auditLog('DATA_EXPORT_REQUEST', userId, { ip: req.ip })
 
-    // Fetch all user data
+    // Fetch all user data (links are embedded in bioPages, not separate collection)
     const [
       user,
       posts,
       socialAccounts,
       bioPages,
-      links,
       teams,
       notifications,
       analytics
@@ -34,7 +32,6 @@ export async function exportUserData(req, res) {
       Post.find({ userId }),
       SocialAccount.find({ userId }).select('-accessToken -refreshToken'), // Exclude sensitive tokens
       BioPage.find({ userId }),
-      Link.find({ userId }),
       Team.find({ 'members.userId': userId }),
       Notification.find({ userId }),
       Analytics.find({ userId })
@@ -65,9 +62,9 @@ export async function exportUserData(req, res) {
       socialAccounts: socialAccounts.map(a => ({
         id: a._id,
         platform: a.platform,
-        profileId: a.profileId,
-        profileName: a.profileName,
-        profileImage: a.profileImage,
+        accountId: a.accountId,
+        accountHandle: a.accountHandle,
+        accountName: a.accountName,
         isActive: a.isActive,
         connectedAt: a.createdAt
       })),
@@ -75,19 +72,17 @@ export async function exportUserData(req, res) {
         id: b._id,
         title: b.title,
         slug: b.slug,
-        bio: b.bio,
-        theme: b.theme,
-        isPublished: b.isPublished,
+        description: b.description,
+        isPublic: b.isPublic,
         views: b.views,
+        links: (b.links || []).map(l => ({
+          id: l._id,
+          title: l.title,
+          url: l.url,
+          clicks: l.clicks,
+          createdAt: l.createdAt
+        })),
         createdAt: b.createdAt
-      })),
-      links: links.map(l => ({
-        id: l._id,
-        title: l.title,
-        url: l.url,
-        bioPageId: l.bioPageId,
-        clicks: l.clicks,
-        createdAt: l.createdAt
       })),
       teamMemberships: teams.map(t => ({
         teamId: t._id,
@@ -143,12 +138,11 @@ export async function deleteAllUserData(req, res) {
     // Get user info before deletion for audit
     const user = await User.findById(userId).select('email name')
     
-    // Delete all user data
+    // Delete all user data (links are embedded in BioPages, no separate Link collection)
     await Promise.all([
       Post.deleteMany({ userId }),
       SocialAccount.deleteMany({ userId }),
       BioPage.deleteMany({ userId }),
-      Link.deleteMany({ userId }),
       Notification.deleteMany({ userId }),
       Analytics.deleteMany({ userId }),
       // Remove user from teams

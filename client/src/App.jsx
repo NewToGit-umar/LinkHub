@@ -8,6 +8,8 @@ import Layout from "./components/Layout";
 import LandingPage from "./pages/Landing/LandingPage";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
+import ForgotPassword from "./pages/Auth/ForgotPassword";
+import ResetPassword from "./pages/Auth/ResetPassword";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Accounts from "./pages/Accounts/Accounts";
 import Posts from "./pages/Posts/Posts";
@@ -21,6 +23,10 @@ import TeamList from "./pages/Teams/TeamList";
 import TeamDashboard from "./pages/Teams/TeamDashboard";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import PrivacySettings from "./pages/Settings/PrivacySettings";
+import Profile from "./pages/Profile/Profile";
+import PrivacyPolicy from "./pages/Legal/PrivacyPolicy";
+import TermsOfService from "./pages/Legal/TermsOfService";
+import Contact from "./pages/Legal/Contact";
 
 const queryClient = new QueryClient();
 
@@ -41,7 +47,7 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  return user ? <Layout>{children}</Layout> : <Navigate to="/login" replace />;
+  return user ? <Layout>{children}</Layout> : <Navigate to="/" replace />;
 };
 
 // Public route - redirects to dashboard if already logged in
@@ -91,6 +97,26 @@ function AppContent() {
             </PublicRoute>
           }
         />
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicRoute>
+              <ForgotPassword />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <PublicRoute>
+              <ResetPassword />
+            </PublicRoute>
+          }
+        />
+        {/* Legal Pages - Public access without redirect */}
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/contact" element={<Contact />} />
         <Route
           path="/dashboard"
           element={
@@ -205,6 +231,14 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
         {/* Catch-all redirect to landing */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
@@ -216,13 +250,13 @@ function AppContent() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ThemeProvider>
-          <BrowserRouter>
+      <BrowserRouter>
+        <AuthProvider>
+          <ThemeProvider>
             <AppContent />
-          </BrowserRouter>
-        </ThemeProvider>
-      </AuthProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }

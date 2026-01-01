@@ -42,6 +42,9 @@ export const authAPI = {
   register: (userData) => {
     return api.post('/auth/register', userData)
   },
+  googleAuth: (credential) => {
+    return api.post('/auth/google', { credential })
+  },
 }
 
 export const dashboardAPI = {
@@ -153,6 +156,16 @@ export const privacyAPI = {
   deleteAccount: (confirmDelete) => api.post('/privacy/delete-account', { confirmDelete }),
   getSettings: () => api.get('/privacy/settings'),
   updateSettings: (settings) => api.patch('/privacy/settings', settings)
+}
+
+export const profileAPI = {
+  get: () => api.get('/profile'),
+  update: (data) => api.patch('/profile', data),
+  uploadAvatar: (formData) => api.post('/profile/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  deleteAvatar: () => api.delete('/profile/avatar'),
+  changePassword: (data) => api.post('/profile/change-password', data)
 }
 
 export default api

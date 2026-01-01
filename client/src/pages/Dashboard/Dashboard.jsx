@@ -12,7 +12,6 @@ import {
   MessageCircle,
   TrendingUp,
   Zap,
-  Sparkles,
   RefreshCw,
 } from "lucide-react";
 import { dashboardAPI } from "../../services/api";
@@ -115,7 +114,6 @@ const Dashboard = () => {
               title="Total Posts"
               value={stats.totalPosts}
               icon={Calendar}
-              trend={{ value: 12, isPositive: true }}
               color="blue"
               gradient="from-blue-500 to-indigo-500"
             />
@@ -125,7 +123,6 @@ const Dashboard = () => {
               title="Scheduled"
               value={stats.scheduledPosts}
               icon={Zap}
-              trend={{ value: 5, isPositive: true }}
               color="green"
               gradient="from-green-500 to-emerald-500"
             />
@@ -135,7 +132,6 @@ const Dashboard = () => {
               title="Connected Accounts"
               value={stats.connectedAccounts}
               icon={Users}
-              trend={{ value: 2, isPositive: true }}
               color="purple"
               gradient="from-purple-500 to-pink-500"
             />
@@ -145,7 +141,6 @@ const Dashboard = () => {
               title="Total Engagement"
               value={stats.totalEngagement.toLocaleString()}
               icon={TrendingUp}
-              trend={{ value: 8, isPositive: true }}
               color="orange"
               gradient="from-orange-500 to-red-500"
             />
@@ -174,7 +169,7 @@ const Dashboard = () => {
               {recentPosts.length === 0 ? (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-4 float">
-                    <Sparkles className="w-8 h-8 text-white" />
+                    <Link2 className="w-8 h-8 text-white" />
                   </div>
                   <p className="text-gray-500">
                     No activity yet. Your stats are set to 0.

@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, Sparkles, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Link2, ArrowRight } from "lucide-react";
+import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../../hooks/useAuth";
+import api from "../../services/api";
 import toast from "react-hot-toast";
 import { SkipLink } from "../../components/Accessible";
 
@@ -12,7 +14,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const { login } = useAuth();
+  const { login, setUser } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -38,6 +40,32 @@ const Login = () => {
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const response = await api.post("/auth/google", {
+        credential: credentialResponse.credential,
+      });
+
+      if (response.data.token) {
+        localStorage.setItem("linkhub_token", response.data.token);
+        localStorage.setItem(
+          "linkhub_user",
+          JSON.stringify(response.data.user)
+        );
+        setUser(response.data.user);
+        toast.success("Welcome to LinkHub!");
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.error("Google auth error:", error);
+      toast.error(error.response?.data?.message || "Google sign-in failed");
+    }
+  };
+
+  const handleGoogleError = () => {
+    toast.error("Google sign-in was cancelled or failed");
+  };
+
   return (
     <>
       <SkipLink targetId="login-form" />
@@ -58,7 +86,7 @@ const Login = () => {
         <div className="max-w-md w-full space-y-8 relative z-10">
           <div className="text-center fade-in">
             <div className="mx-auto h-16 w-16 bg-gradient-to-br from-emerald-500 to-lime-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-emerald-500/50 float">
-              <Sparkles className="w-8 h-8 text-white" />
+              <Link2 className="w-8 h-8 text-white" />
             </div>
             <h1 className="mt-6 text-4xl font-extrabold text-white">
               Welcome Back
@@ -88,17 +116,17 @@ const Login = () => {
                 <div>
                   <label
                     htmlFor="email"
-                    className="block text-sm font-semibold text-white mb-2"
+                    className="block text-sm font-semibold text-emerald-700 mb-2"
                   >
                     Email address
-                    <span className="text-pink-400 ml-1" aria-hidden="true">
+                    <span className="text-pink-500 ml-1" aria-hidden="true">
                       *
                     </span>
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <Mail
-                        className="h-5 w-5 text-gray-300"
+                        className="h-5 w-5 text-gray-400"
                         aria-hidden="true"
                       />
                     </div>
@@ -111,7 +139,7 @@ const Login = () => {
                       aria-required="true"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl text-white placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent focus:bg-white/25 transition-all"
+                      className="w-full pl-12 pr-4 py-3.5 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-xl text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all"
                       placeholder="Enter your email"
                     />
                   </div>
@@ -120,17 +148,17 @@ const Login = () => {
                 <div>
                   <label
                     htmlFor="password"
-                    className="block text-sm font-semibold text-white mb-2"
+                    className="block text-sm font-semibold text-emerald-700 mb-2"
                   >
                     Password
-                    <span className="text-pink-400 ml-1" aria-hidden="true">
+                    <span className="text-pink-500 ml-1" aria-hidden="true">
                       *
                     </span>
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <Lock
-                        className="h-5 w-5 text-gray-300"
+                        className="h-5 w-5 text-gray-400"
                         aria-hidden="true"
                       />
                     </div>
@@ -143,12 +171,12 @@ const Login = () => {
                       aria-required="true"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-12 pr-12 py-3.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl text-white placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent focus:bg-white/25 transition-all"
+                      className="w-full pl-12 pr-12 py-3.5 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-xl text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all"
                       placeholder="Enter your password"
                     />
                     <button
                       type="button"
-                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white transition-colors"
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-gray-700 transition-colors"
                       onClick={() => setShowPassword(!showPassword)}
                       aria-label={
                         showPassword ? "Hide password" : "Show password"
@@ -162,6 +190,15 @@ const Login = () => {
                     </button>
                   </div>
                 </div>
+              </div>
+
+              <div className="flex items-center justify-end">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm font-medium text-emerald-600 hover:text-emerald-500 transition-colors"
+                >
+                  Forgot password?
+                </Link>
               </div>
 
               <button
@@ -182,6 +219,31 @@ const Login = () => {
                   </>
                 )}
               </button>
+
+              {/* Divider */}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-white text-gray-500">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+
+              {/* Google Sign In Button */}
+              <div className="flex justify-center">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  theme="outline"
+                  size="large"
+                  width="100%"
+                  text="continue_with"
+                  shape="rectangular"
+                />
+              </div>
             </form>
           </div>
 

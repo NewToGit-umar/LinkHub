@@ -15,7 +15,6 @@ import {
   Menu,
   X,
   ChevronLeft,
-  Sparkles,
   Bell,
   User,
   Moon,
@@ -74,7 +73,17 @@ export default function Layout({ children }) {
     setShowLogoutModal(false);
     logout();
     toast.success("Logged out successfully");
-    navigate("/login");
+    navigate("/");
+  };
+
+  // Helper function to get avatar URL
+  const getAvatarUrl = () => {
+    if (!user?.avatar) return null;
+    if (user.avatar.startsWith("http")) return user.avatar;
+    return `${
+      import.meta.env.VITE_API_URL?.replace("/api", "") ||
+      "http://localhost:5001"
+    }${user.avatar}`;
   };
 
   const handleRefreshNotifications = async () => {
@@ -139,7 +148,7 @@ export default function Layout({ children }) {
           {!collapsed && (
             <Link to="/dashboard" className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-lime-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                <Sparkles className="w-5 h-5 text-white" />
+                <Link2 className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold gradient-text">LinkHub</span>
             </Link>
@@ -147,7 +156,7 @@ export default function Layout({ children }) {
           {collapsed && (
             <Link to="/dashboard" className="mx-auto">
               <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-lime-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                <Sparkles className="w-5 h-5 text-white" />
+                <Link2 className="w-5 h-5 text-white" />
               </div>
             </Link>
           )}
@@ -204,8 +213,16 @@ export default function Layout({ children }) {
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200/50 dark:border-slate-700/50 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
           {!collapsed ? (
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-lime-500 rounded-xl flex items-center justify-center text-white font-bold">
-                {user?.name?.charAt(0)?.toUpperCase() || "U"}
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-lime-500 rounded-xl flex items-center justify-center text-white font-bold overflow-hidden">
+                {getAvatarUrl() ? (
+                  <img
+                    src={getAvatarUrl()}
+                    alt={user?.name || "User"}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  user?.name?.charAt(0)?.toUpperCase() || "U"
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
@@ -218,11 +235,19 @@ export default function Layout({ children }) {
             </div>
           ) : (
             <div className="flex justify-center mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-lime-500 rounded-xl flex items-center justify-center text-white font-bold">
-                {user?.name?.charAt(0)?.toUpperCase() || "U"}
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-lime-500 rounded-xl flex items-center justify-center text-white font-bold overflow-hidden">
+                {getAvatarUrl() ? (
+                  <img
+                    src={getAvatarUrl()}
+                    alt={user?.name || "User"}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  user?.name?.charAt(0)?.toUpperCase() || "U"
+                )}
               </div>
             </div>
-          )}
+          )}          
           <button
             onClick={handleLogout}
             className={`flex items-center gap-3 w-full px-4 py-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors ${
@@ -404,8 +429,16 @@ export default function Layout({ children }) {
                 onClick={() => setShowProfileMenu((v) => !v)}
                 className="flex items-center gap-2 pl-3 border-l border-emerald-800/60"
               >
-                <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-emerald-400 rounded-lg flex items-center justify-center text-white text-sm font-bold">
-                  {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-emerald-400 rounded-lg flex items-center justify-center text-white text-sm font-bold overflow-hidden">
+                  {getAvatarUrl() ? (
+                    <img
+                      src={getAvatarUrl()}
+                      alt={user?.name || "User"}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    user?.name?.charAt(0)?.toUpperCase() || "U"
+                  )}
                 </div>
                 <span className="hidden sm:block text-sm font-medium text-emerald-50">
                   {user?.name?.split(" ")[0] || "User"}
@@ -435,7 +468,7 @@ export default function Layout({ children }) {
                     }`}
                   >
                     <Link
-                      to="/settings/privacy"
+                      to="/profile"
                       className={`block px-3 py-2 rounded-xl ${
                         isDark
                           ? "hover:bg-emerald-900/40"
@@ -443,6 +476,16 @@ export default function Layout({ children }) {
                       }`}
                     >
                       Edit Profile
+                    </Link>
+                    <Link
+                      to="/settings/privacy"
+                      className={`block px-3 py-2 rounded-xl ${
+                        isDark
+                          ? "hover:bg-emerald-900/40"
+                          : "hover:bg-emerald-100"
+                      }`}
+                    >
+                      Privacy Settings
                     </Link>
                     <Link
                       to="/bio"

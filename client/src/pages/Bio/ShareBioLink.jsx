@@ -1,8 +1,10 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { useTheme } from "../../hooks/useTheme";
 
 export default function ShareBioLink({ page }) {
   const [copied, setCopied] = useState(false);
+  const { isDark } = useTheme();
 
   const slug = page?.slug || "";
   const title = page?.title || "";
@@ -13,9 +15,11 @@ export default function ShareBioLink({ page }) {
     try {
       await navigator.clipboard.writeText(bioUrl);
       setCopied(true);
+      toast.success("Link copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error("Failed to copy", err);
+      toast.error("Failed to copy link");
     }
   };
 
@@ -45,7 +49,7 @@ export default function ShareBioLink({ page }) {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast.success("Bio page exported");
+      toast.success("Bio page exported successfully!");
     } catch (err) {
       toast.error("Failed to export bio page");
     }
@@ -90,33 +94,47 @@ export default function ShareBioLink({ page }) {
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 space-y-3">
+    <div
+      className={`${
+        isDark
+          ? "bg-slate-800/50 border-slate-700/50"
+          : "bg-white/80 border-gray-200"
+      } backdrop-blur-sm rounded-2xl border p-5 space-y-4`}
+    >
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-medium text-gray-700">
+        <h3
+          className={`text-lg font-semibold ${
+            isDark ? "text-white" : "text-gray-800"
+          }`}
+        >
           Share Your Bio Page
         </h3>
         <button
           onClick={handleExport}
-          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow hover:shadow-lg transition"
+          className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-emerald-600 to-lime-500 text-white shadow hover:shadow-lg transition"
         >
           Export JSON
         </button>
       </div>
 
       {/* URL Display and Copy */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2">
         <input
           type="text"
           value={bioUrl}
           readOnly
-          className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600"
+          className={`flex-1 px-4 py-3 ${
+            isDark
+              ? "bg-slate-700/50 border-slate-600 text-gray-300"
+              : "bg-gray-100 border-gray-200 text-gray-700"
+          } border rounded-xl text-sm`}
         />
         <button
           onClick={copyToClipboard}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+          className={`px-4 py-3 rounded-xl text-sm font-medium transition ${
             copied
-              ? "bg-green-100 text-green-700"
-              : "bg-indigo-600 text-white hover:bg-indigo-700"
+              ? "bg-green-600 text-white"
+              : "bg-emerald-600 text-white hover:bg-emerald-700"
           }`}
         >
           {copied ? "Copied!" : "Copy"}
@@ -124,25 +142,48 @@ export default function ShareBioLink({ page }) {
       </div>
 
       {/* Share Buttons */}
-      <div className="flex flex-wrap gap-2">
-        {shareOptions.map((option) => (
-          <a
-            key={option.name}
-            href={option.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm text-gray-700 transition"
-          >
-            <span className="text-xs">{option.icon}</span>
-            {option.name}
-          </a>
-        ))}
+      <div>
+        <p
+          className={`text-sm ${
+            isDark ? "text-gray-400" : "text-gray-500"
+          } mb-2`}
+        >
+          Share on
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {shareOptions.map((option) => (
+            <a
+              key={option.name}
+              href={option.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`inline-flex items-center gap-2 px-3 py-2 ${
+                isDark
+                  ? "bg-slate-700/50 hover:bg-slate-600/50 border-slate-600 text-gray-300"
+                  : "bg-gray-100 hover:bg-gray-200 border-gray-200 text-gray-700"
+              } border rounded-xl text-sm transition`}
+            >
+              <span>{option.icon}</span>
+              {option.name}
+            </a>
+          ))}
+        </div>
       </div>
 
-      {/* QR Code Placeholder */}
-      <div className="mt-4 pt-4 border-t">
-        <p className="text-xs text-gray-500 mb-2">QR Code</p>
-        <div className="w-24 h-24 bg-gray-100 rounded flex items-center justify-center">
+      {/* QR Code */}
+      <div
+        className={`pt-4 border-t ${
+          isDark ? "border-slate-700/50" : "border-gray-200"
+        }`}
+      >
+        <p
+          className={`text-sm ${
+            isDark ? "text-gray-400" : "text-gray-500"
+          } mb-3`}
+        >
+          QR Code
+        </p>
+        <div className="w-28 h-28 bg-white rounded-xl p-2 flex items-center justify-center">
           <img
             src={`https://api.qrserver.com/v1/create-qr-code/?size=96x96&data=${encodeURIComponent(
               bioUrl

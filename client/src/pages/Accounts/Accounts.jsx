@@ -452,17 +452,15 @@ export default function Accounts() {
                   <selectedProvider.icon className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold gradient-text">
+                  <h3 className="text-xl font-bold text-emerald-400">
                     Connect {selectedProvider.name}
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Demo Mode
-                  </p>
+                  <p className="text-sm text-gray-400">Demo Mode</p>
                 </div>
               </div>
 
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 mb-6">
-                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              <div className="bg-yellow-900/30 border border-yellow-700 rounded-xl p-4 mb-6">
+                <p className="text-sm text-yellow-200">
                   <strong>Note:</strong> This is a demo connection. In
                   production, you would be redirected to {selectedProvider.name}
                   's OAuth page to authorize access.
@@ -471,7 +469,7 @@ export default function Accounts() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Username / Handle
                   </label>
                   <input
@@ -479,11 +477,11 @@ export default function Accounts() {
                     value={demoHandle}
                     onChange={(e) => setDemoHandle(e.target.value)}
                     placeholder={`e.g., my${selectedProvider.id}handle`}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-slate-600 rounded-xl bg-slate-700 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Profile Link (required)
                   </label>
                   <input
@@ -491,7 +489,7 @@ export default function Accounts() {
                     value={demoUrl}
                     onChange={(e) => setDemoUrl(e.target.value)}
                     placeholder={`https://${selectedProvider.id}.com/you`}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-slate-600 rounded-xl bg-slate-700 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     required
                   />
                 </div>

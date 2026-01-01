@@ -93,21 +93,21 @@ export default function PrivacySettings() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">
-          Privacy Settings
-        </h1>
+    <div className="p-6">
+      <div className="max-w-3xl mx-auto">
+        <h1 className="text-3xl font-bold text-white mb-8">Privacy Settings</h1>
 
         {/* Privacy Toggles */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Privacy Preferences</h2>
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6 mb-6">
+          <h2 className="text-xl font-semibold text-white mb-4">
+            Privacy Preferences
+          </h2>
 
           <div className="space-y-4">
             <ToggleSetting
@@ -151,9 +151,11 @@ export default function PrivacySettings() {
         </div>
 
         {/* Data Export Section */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Export Your Data</h2>
-          <p className="text-gray-600 mb-4">
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6 mb-6">
+          <h2 className="text-xl font-semibold text-white mb-4">
+            Export Your Data
+          </h2>
+          <p className="text-gray-400 mb-4">
             Download a copy of all your data stored in LinkHub. This includes
             your profile, posts, connected accounts, bio pages, and analytics
             data.
@@ -168,11 +170,11 @@ export default function PrivacySettings() {
         </div>
 
         {/* Delete Account Section */}
-        <div className="bg-white rounded-lg shadow p-6 border-2 border-red-200">
-          <h2 className="text-xl font-semibold text-red-700 mb-4">
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border-2 border-red-800/50 p-6">
+          <h2 className="text-xl font-semibold text-red-400 mb-4">
             Danger Zone
           </h2>
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-400 mb-4">
             Permanently delete your account and all associated data. This action
             cannot be undone.
           </p>
@@ -197,8 +199,8 @@ export default function PrivacySettings() {
               onClick={() => setShowDeleteModal(false)}
             />
             <div className="flex min-h-full items-center justify-center p-4">
-              <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-                <h3 className="text-lg font-semibold text-red-700 mb-4">
+              <div className="relative bg-slate-800 rounded-2xl border border-slate-700 shadow-xl max-w-md w-full p-6">
+                <h3 className="text-lg font-semibold text-red-400 mb-4">
                   Delete Account Permanently
                 </h3>
 
@@ -208,8 +210,9 @@ export default function PrivacySettings() {
                   undone!
                 </Alert>
 
-                <p className="text-gray-600 mb-4">
-                  Type <strong>DELETE MY ACCOUNT</strong> to confirm:
+                <p className="text-gray-400 mb-4">
+                  Type <strong className="text-white">DELETE MY ACCOUNT</strong>{" "}
+                  to confirm:
                 </p>
 
                 <input
@@ -217,7 +220,7 @@ export default function PrivacySettings() {
                   value={deleteConfirm}
                   onChange={(e) => setDeleteConfirm(e.target.value)}
                   placeholder="DELETE MY ACCOUNT"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-red-500"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-gray-500 mb-4 focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   aria-label="Type DELETE MY ACCOUNT to confirm"
                 />
 
@@ -253,15 +256,12 @@ function ToggleSetting({ label, description, checked, onChange }) {
   const id = `toggle-${label.toLowerCase().replace(/\s/g, "-")}`;
 
   return (
-    <div className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+    <div className="flex items-center justify-between py-3 border-b border-slate-700/50 last:border-0">
       <div>
-        <label
-          htmlFor={id}
-          className="font-medium text-gray-900 cursor-pointer"
-        >
+        <label htmlFor={id} className="font-medium text-white cursor-pointer">
           {label}
         </label>
-        <p className="text-sm text-gray-500">{description}</p>
+        <p className="text-sm text-gray-400">{description}</p>
       </div>
       <button
         id={id}
@@ -270,8 +270,8 @@ function ToggleSetting({ label, description, checked, onChange }) {
         onClick={onChange}
         className={`
           relative inline-flex h-6 w-11 items-center rounded-full transition-colors
-          focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
-          ${checked ? "bg-indigo-600" : "bg-gray-200"}
+          focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-800
+          ${checked ? "bg-emerald-600" : "bg-slate-600"}
         `}
       >
         <span

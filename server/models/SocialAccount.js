@@ -130,10 +130,10 @@ SocialAccountSchema.methods.revoke = async function () {
   this.isRevoked = true
   this.isActive = false
   this.revokedAt = Date.now()
-  // Remove sensitive tokens from the stored record
-  this.accessToken = undefined
-  this.refreshToken = undefined
-  this.tokenExpiresAt = undefined
+  // Remove sensitive tokens from the stored record (use empty string since accessToken is required)
+  this.accessToken = 'REVOKED'
+  this.refreshToken = null
+  this.tokenExpiresAt = null
   await this.save()
   return this
 }

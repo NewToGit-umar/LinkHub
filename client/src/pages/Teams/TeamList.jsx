@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { teamsAPI } from "../../services/api";
-import { Plus, Users, Crown, ChevronRight, Sparkles, X } from "lucide-react";
+import { Plus, Users, Crown, ChevronRight, Link2, X } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function TeamList() {
@@ -175,7 +175,7 @@ export default function TeamList() {
         {teams.length === 0 ? (
           <div className="card text-center py-16 fade-in">
             <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-6 float">
-              <Sparkles className="w-10 h-10 text-white" />
+              <Link2 className="w-10 h-10 text-white" />
             </div>
             <h3 className="text-2xl font-bold text-gray-800 mb-2">
               No teams yet

@@ -21,17 +21,17 @@ export const AccessibleButton = forwardRef(
     ref
   ) => {
     const baseClasses =
-      "inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2";
+      "inline-flex items-center justify-center font-medium rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800";
 
     const variants = {
       primary:
-        "bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500 disabled:bg-indigo-400",
+        "bg-gradient-to-r from-emerald-600 to-lime-500 text-white hover:from-emerald-700 hover:to-lime-600 focus:ring-emerald-500 disabled:opacity-50",
       secondary:
-        "bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500 disabled:bg-gray-100",
+        "bg-slate-700 text-gray-200 hover:bg-slate-600 focus:ring-slate-500 disabled:opacity-50 border border-slate-600",
       danger:
-        "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 disabled:bg-red-400",
+        "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 disabled:opacity-50",
       outline:
-        "border-2 border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-indigo-500",
+        "border-2 border-slate-600 text-gray-300 hover:bg-slate-700 focus:ring-emerald-500",
     };
 
     const sizes = {

@@ -4,7 +4,13 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { requestLogger, errorLogger, logger } from './utils/logger.js';
+
+// Get __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Load environment variables
 dotenv.config();
@@ -12,7 +18,9 @@ dotenv.config();
 const app = express();
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 // Allow the dev client origin dynamically so Vite dev server ports are accepted
 // Using `origin: true` reflects the request Origin header back, which works
 // well for development. In production set `CLIENT_URL` in .env to a specific origin.
@@ -75,6 +83,12 @@ app.use('/api/admin', (await import('./routes/admin.js')).default);
 
 // Mount privacy/GDPR routes (Task 49)
 app.use('/api/privacy', (await import('./routes/privacy.js')).default);
+
+// Mount profile routes
+app.use('/api/profile', (await import('./routes/profile.js')).default);
+
+// Serve static files for uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/linkhub')
