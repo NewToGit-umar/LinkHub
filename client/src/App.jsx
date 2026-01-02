@@ -51,7 +51,7 @@ const ProtectedRoute = ({ children }) => {
 };
 
 // Public route - redirects to dashboard if already logged in
-const PublicRoute = ({ children }) => {
+const PublicRoute = ({ children, allowAuthenticated = false }) => {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -65,6 +65,11 @@ const PublicRoute = ({ children }) => {
     );
   }
 
+  // Allow authenticated users to view if allowAuthenticated is true
+  if (allowAuthenticated) {
+    return children;
+  }
+
   return user ? <Navigate to="/dashboard" replace /> : children;
 };
 
@@ -72,11 +77,11 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-950 via-black to-emerald-900 text-white">
       <Routes>
-        {/* Landing page for first-time visitors */}
+        {/* Landing page - accessible to everyone including logged-in users */}
         <Route
           path="/"
           element={
-            <PublicRoute>
+            <PublicRoute allowAuthenticated={true}>
               <LandingPage />
             </PublicRoute>
           }

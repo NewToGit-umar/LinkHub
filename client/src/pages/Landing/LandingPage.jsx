@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import { landingAPI } from "../../services/api";
 import {
   Link2,
   BarChart3,
@@ -20,19 +22,42 @@ import {
   Linkedin,
   Youtube,
   ChevronDown,
+  Edit3,
+  X,
+  Save,
+  Upload,
+  Plus,
+  Trash2,
+  Move,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
-// Sample profile data for demo
-const sampleProfile = {
+// Icon mapping for dynamic rendering
+const iconMap = {
+  Globe,
+  Link2,
+  Calendar,
+  Zap,
+  BarChart3,
+  Users,
+  Star,
+  Shield,
+};
+
+// Default sample profile data (fallback)
+const defaultProfile = {
   name: "Umar Farooq",
   username: "umarfarooq",
   bio: "Digital Creator | Marketing Expert | Helping brands grow online 🚀",
   avatar: "/umar-profile.png",
   links: [
-    { title: "My Portfolio", url: "#", clicks: 2847, icon: Globe },
-    { title: "Latest Blog Post", url: "#", clicks: 1523, icon: Link2 },
-    { title: "Book a Consultation", url: "#", clicks: 892, icon: Calendar },
-    { title: "Free Marketing Guide", url: "#", clicks: 3201, icon: Zap },
+    { title: "My Portfolio", url: "#", clicks: 2847, icon: "Globe" },
+    { title: "Latest Blog Post", url: "#", clicks: 1523, icon: "Link2" },
+    { title: "Book a Consultation", url: "#", clicks: 892, icon: "Calendar" },
+    { title: "Free Marketing Guide", url: "#", clicks: 3201, icon: "Zap" },
   ],
   stats: {
     totalViews: 45892,
@@ -103,6 +128,213 @@ const platforms = [
 
 export default function LandingPage() {
   const [darkPreview, setDarkPreview] = useState(false);
+  const [sampleProfile, setSampleProfile] = useState(defaultProfile);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState(defaultProfile);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const fileInputRef = useRef(null);
+
+  // Avatar positioning state
+  const [imagePosition, setImagePosition] = useState({ x: 50, y: 30 }); // percentage values
+  const [imageScale, setImageScale] = useState(100); // percentage scale
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const avatarContainerRef = useRef(null);
+
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+
+  // Fetch landing profile on mount
+  useEffect(() => {
+    fetchLandingProfile();
+  }, []);
+
+  const fetchLandingProfile = async () => {
+    try {
+      const response = await landingAPI.getProfile();
+      if (response.data?.profile) {
+        setSampleProfile(response.data.profile);
+        setEditForm(response.data.profile);
+      }
+    } catch (error) {
+      console.log("Using default profile");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditForm({ ...sampleProfile });
+    setIsEditing(false);
+  };
+
+  const handleSaveProfile = async () => {
+    setIsSaving(true);
+    try {
+      const response = await landingAPI.updateProfile(editForm);
+      if (response.data?.profile) {
+        setSampleProfile(response.data.profile);
+        setEditForm(response.data.profile);
+      }
+      setIsEditing(false);
+      toast.success("Profile updated successfully!");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to update profile");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      const response = await landingAPI.uploadAvatar(formData);
+      if (response.data?.avatar) {
+        const apiBase =
+          import.meta.env.VITE_API_URL?.replace("/api", "") ||
+          "http://localhost:5001";
+        const avatarUrl = response.data.avatar.startsWith("http")
+          ? response.data.avatar
+          : `${apiBase}${response.data.avatar}`;
+        setEditForm((prev) => ({ ...prev, avatar: avatarUrl }));
+        setSampleProfile((prev) => ({ ...prev, avatar: avatarUrl }));
+        toast.success("Avatar uploaded!");
+      }
+    } catch (error) {
+      toast.error("Failed to upload avatar");
+    }
+  };
+
+  const handleLinkChange = (index, field, value) => {
+    const newLinks = [...editForm.links];
+    newLinks[index] = { ...newLinks[index], [field]: value };
+    setEditForm((prev) => ({ ...prev, links: newLinks }));
+  };
+
+  const handleAddLink = () => {
+    setEditForm((prev) => ({
+      ...prev,
+      links: [
+        ...prev.links,
+        { title: "New Link", url: "#", clicks: 0, icon: "Globe" },
+      ],
+    }));
+  };
+
+  const handleRemoveLink = (index) => {
+    setEditForm((prev) => ({
+      ...prev,
+      links: prev.links.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleStatsChange = (field, value) => {
+    setEditForm((prev) => ({
+      ...prev,
+      stats: { ...prev.stats, [field]: parseInt(value) || 0 },
+    }));
+  };
+
+  // Avatar drag handlers
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+    setDragStart({
+      x: e.clientX - imagePosition.x,
+      y: e.clientY - imagePosition.y,
+    });
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+
+    const newX = Math.max(0, Math.min(100, e.clientX - dragStart.x));
+    const newY = Math.max(0, Math.min(100, e.clientY - dragStart.y));
+
+    setImagePosition({ x: newX, y: newY });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleTouchStart = (e) => {
+    const touch = e.touches[0];
+    setIsDragging(true);
+    setDragStart({
+      x: touch.clientX - imagePosition.x,
+      y: touch.clientY - imagePosition.y,
+    });
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging) return;
+    const touch = e.touches[0];
+
+    const newX = Math.max(0, Math.min(100, touch.clientX - dragStart.x));
+    const newY = Math.max(0, Math.min(100, touch.clientY - dragStart.y));
+
+    setImagePosition({ x: newX, y: newY });
+  };
+
+  const handleZoomIn = () => {
+    setImageScale((prev) => Math.min(200, prev + 10));
+  };
+
+  const handleZoomOut = () => {
+    setImageScale((prev) => Math.max(100, prev - 10));
+  };
+
+  const handleResetPosition = () => {
+    setImagePosition({ x: 50, y: 30 });
+    setImageScale(100);
+  };
+
+  // Update editForm with position when it changes
+  useEffect(() => {
+    if (isEditing) {
+      setEditForm((prev) => ({
+        ...prev,
+        avatarPosition: imagePosition,
+        avatarScale: imageScale,
+      }));
+    }
+  }, [imagePosition, imageScale, isEditing]);
+
+  // Load saved position when opening edit modal
+  const handleEditClick = () => {
+    setEditForm({ ...sampleProfile });
+    if (sampleProfile.avatarPosition) {
+      setImagePosition(sampleProfile.avatarPosition);
+    } else {
+      setImagePosition({ x: 50, y: 30 });
+    }
+    if (sampleProfile.avatarScale) {
+      setImageScale(sampleProfile.avatarScale);
+    } else {
+      setImageScale(100);
+    }
+    setIsEditing(true);
+  };
+
+  // Get avatar URL with proper base
+  const getAvatarUrl = (avatar) => {
+    if (!avatar) return "/umar-profile.png";
+    if (avatar.startsWith("http")) return avatar;
+    if (avatar.startsWith("/uploads")) {
+      const apiBase =
+        import.meta.env.VITE_API_URL?.replace("/api", "") ||
+        "http://localhost:5001";
+      return `${apiBase}${avatar}`;
+    }
+    return avatar;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-emerald-950 to-black overflow-hidden">
@@ -202,6 +434,17 @@ export default function LandingPage() {
 
             {/* Right: Sample Profile Preview */}
             <div className="relative" id="demo">
+              {/* Admin Edit Button */}
+              {isAdmin && !isEditing && (
+                <button
+                  onClick={handleEditClick}
+                  className="absolute -top-4 left-4 z-20 flex items-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors shadow-lg"
+                >
+                  <Edit3 className="w-4 h-4" />
+                  Edit Profile
+                </button>
+              )}
+
               {/* Theme toggle for preview */}
               <div className="absolute -top-4 right-4 z-20">
                 <button
@@ -240,9 +483,17 @@ export default function LandingPage() {
                       <div className="text-center mb-6">
                         <div className="w-20 h-20 mx-auto rounded-full shadow-lg mb-4 overflow-hidden">
                           <img
-                            src={sampleProfile.avatar}
+                            src={getAvatarUrl(sampleProfile.avatar)}
                             alt={sampleProfile.name}
                             className="w-full h-full object-cover"
+                            style={{
+                              objectPosition: sampleProfile.avatarPosition
+                                ? `${sampleProfile.avatarPosition.x}% ${sampleProfile.avatarPosition.y}%`
+                                : "50% 30%",
+                              transform: sampleProfile.avatarScale
+                                ? `scale(${sampleProfile.avatarScale / 100})`
+                                : "scale(1)",
+                            }}
                           />
                         </div>
                         <h3
@@ -344,24 +595,30 @@ export default function LandingPage() {
 
                       {/* Links */}
                       <div className="space-y-3">
-                        {sampleProfile.links.map((link, i) => (
-                          <div
-                            key={i}
-                            className={`p-3 rounded-xl flex items-center gap-3 transition-all hover:scale-[1.02] cursor-pointer ${
-                              darkPreview
-                                ? "bg-gradient-to-r from-emerald-700/60 to-lime-600/60 hover:from-emerald-700 hover:to-lime-600"
-                                : "bg-gradient-to-r from-emerald-700/50 to-lime-600/50 hover:from-emerald-700 hover:to-lime-600"
-                            }`}
-                          >
-                            <link.icon className="w-5 h-5 text-white" />
-                            <span className="flex-1 text-white font-medium text-sm">
-                              {link.title}
-                            </span>
-                            <span className="text-xs text-white/70">
-                              {link.clicks}
-                            </span>
-                          </div>
-                        ))}
+                        {sampleProfile.links.map((link, i) => {
+                          const IconComponent =
+                            typeof link.icon === "string"
+                              ? iconMap[link.icon] || Globe
+                              : link.icon || Globe;
+                          return (
+                            <div
+                              key={i}
+                              className={`p-3 rounded-xl flex items-center gap-3 transition-all hover:scale-[1.02] cursor-pointer ${
+                                darkPreview
+                                  ? "bg-gradient-to-r from-emerald-700/60 to-lime-600/60 hover:from-emerald-700 hover:to-lime-600"
+                                  : "bg-gradient-to-r from-emerald-700/50 to-lime-600/50 hover:from-emerald-700 hover:to-lime-600"
+                              }`}
+                            >
+                              <IconComponent className="w-5 h-5 text-white" />
+                              <span className="flex-1 text-white font-medium text-sm">
+                                {link.title}
+                              </span>
+                              <span className="text-xs text-white/70">
+                                {link.clicks}
+                              </span>
+                            </div>
+                          );
+                        })}
                       </div>
 
                       {/* Social icons */}
@@ -536,6 +793,307 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* Admin Edit Modal */}
+      {isEditing && isAdmin && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-slate-900 border-b border-slate-700 p-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">
+                Edit Landing Profile
+              </h2>
+              <button
+                onClick={handleCancelEdit}
+                className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-6">
+              {/* Avatar Upload with Drag to Position */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Avatar - Drag to position your photo
+                </label>
+
+                {/* Large preview with drag functionality */}
+                <div className="flex flex-col items-center gap-4 mb-4">
+                  <div
+                    ref={avatarContainerRef}
+                    className="relative w-40 h-40 rounded-full overflow-hidden bg-slate-800 border-4 border-emerald-500/50 cursor-move select-none"
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleMouseUp}
+                  >
+                    <img
+                      src={getAvatarUrl(editForm.avatar)}
+                      alt="Avatar"
+                      draggable={false}
+                      className="absolute w-full h-full object-cover transition-transform"
+                      style={{
+                        objectPosition: `${imagePosition.x}% ${imagePosition.y}%`,
+                        transform: `scale(${imageScale / 100})`,
+                      }}
+                    />
+                    {/* Drag indicator overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/30 transition-colors">
+                      <Move className="w-8 h-8 text-white opacity-0 hover:opacity-100 transition-opacity pointer-events-none" />
+                    </div>
+                  </div>
+
+                  {/* Position controls */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleZoomOut}
+                      disabled={imageScale <= 100}
+                      className="p-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                      title="Zoom out"
+                    >
+                      <ZoomOut className="w-4 h-4" />
+                    </button>
+                    <span className="text-xs text-gray-400 w-12 text-center">
+                      {imageScale}%
+                    </span>
+                    <button
+                      onClick={handleZoomIn}
+                      disabled={imageScale >= 200}
+                      className="p-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                      title="Zoom in"
+                    >
+                      <ZoomIn className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={handleResetPosition}
+                      className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors ml-2"
+                      title="Reset position"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-gray-500 text-center">
+                    Drag the image to position • Use zoom to adjust size
+                  </p>
+                </div>
+
+                {/* Upload button */}
+                <div className="flex justify-center">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    className="hidden"
+                  />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
+                  >
+                    <Upload className="w-4 h-4" />
+                    Upload New Avatar
+                  </button>
+                </div>
+              </div>
+
+              {/* Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={editForm.name}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                  className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              {/* Username */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  value={editForm.username}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({
+                      ...prev,
+                      username: e.target.value,
+                    }))
+                  }
+                  className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              {/* Bio */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Bio
+                </label>
+                <textarea
+                  value={editForm.bio}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({ ...prev, bio: e.target.value }))
+                  }
+                  rows={3}
+                  className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500 resize-none"
+                />
+              </div>
+
+              {/* Stats */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Stats
+                </label>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">
+                      Total Views
+                    </label>
+                    <input
+                      type="number"
+                      value={editForm.stats?.totalViews || 0}
+                      onChange={(e) =>
+                        handleStatsChange("totalViews", e.target.value)
+                      }
+                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">
+                      Total Clicks
+                    </label>
+                    <input
+                      type="number"
+                      value={editForm.stats?.totalClicks || 0}
+                      onChange={(e) =>
+                        handleStatsChange("totalClicks", e.target.value)
+                      }
+                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">
+                      Followers
+                    </label>
+                    <input
+                      type="number"
+                      value={editForm.stats?.followers || 0}
+                      onChange={(e) =>
+                        handleStatsChange("followers", e.target.value)
+                      }
+                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Links */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-300">
+                    Links
+                  </label>
+                  <button
+                    onClick={handleAddLink}
+                    className="flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded-lg transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Link
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {editForm.links?.map((link, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 p-3 bg-slate-800 rounded-lg"
+                    >
+                      <select
+                        value={link.icon}
+                        onChange={(e) =>
+                          handleLinkChange(index, "icon", e.target.value)
+                        }
+                        className="px-2 py-1 bg-slate-700 border border-slate-600 rounded text-white text-sm focus:outline-none"
+                      >
+                        {Object.keys(iconMap).map((iconName) => (
+                          <option key={iconName} value={iconName}>
+                            {iconName}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        type="text"
+                        value={link.title}
+                        onChange={(e) =>
+                          handleLinkChange(index, "title", e.target.value)
+                        }
+                        placeholder="Link title"
+                        className="flex-1 px-3 py-1 bg-slate-700 border border-slate-600 rounded text-white text-sm focus:outline-none"
+                      />
+                      <input
+                        type="number"
+                        value={link.clicks}
+                        onChange={(e) =>
+                          handleLinkChange(
+                            index,
+                            "clicks",
+                            parseInt(e.target.value) || 0
+                          )
+                        }
+                        placeholder="Clicks"
+                        className="w-20 px-3 py-1 bg-slate-700 border border-slate-600 rounded text-white text-sm focus:outline-none"
+                      />
+                      <button
+                        onClick={() => handleRemoveLink(index)}
+                        className="p-1 hover:bg-red-600/20 rounded transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-400" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="sticky bottom-0 bg-slate-900 border-t border-slate-700 p-4 flex justify-end gap-3">
+              <button
+                onClick={handleCancelEdit}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveProfile}
+                disabled={isSaving}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg transition-colors"
+              >
+                {isSaving ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    Save Changes
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

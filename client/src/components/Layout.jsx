@@ -213,12 +213,12 @@ export default function Layout({ children }) {
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200/50 dark:border-slate-700/50 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
           {!collapsed ? (
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-lime-500 rounded-xl flex items-center justify-center text-white font-bold overflow-hidden">
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-lime-500 rounded-full flex items-center justify-center text-white font-bold overflow-hidden ring-2 ring-emerald-400/30">
                 {getAvatarUrl() ? (
                   <img
                     src={getAvatarUrl()}
                     alt={user?.name || "User"}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-top"
                   />
                 ) : (
                   user?.name?.charAt(0)?.toUpperCase() || "U"
@@ -235,19 +235,19 @@ export default function Layout({ children }) {
             </div>
           ) : (
             <div className="flex justify-center mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-lime-500 rounded-xl flex items-center justify-center text-white font-bold overflow-hidden">
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-lime-500 rounded-full flex items-center justify-center text-white font-bold overflow-hidden ring-2 ring-emerald-400/30">
                 {getAvatarUrl() ? (
                   <img
                     src={getAvatarUrl()}
                     alt={user?.name || "User"}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-top"
                   />
                 ) : (
                   user?.name?.charAt(0)?.toUpperCase() || "U"
                 )}
               </div>
             </div>
-          )}          
+          )}
           <button
             onClick={handleLogout}
             className={`flex items-center gap-3 w-full px-4 py-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors ${

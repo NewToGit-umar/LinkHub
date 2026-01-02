@@ -168,4 +168,12 @@ export const profileAPI = {
   changePassword: (data) => api.post('/profile/change-password', data)
 }
 
+export const landingAPI = {
+  getProfile: () => api.get('/landing/profile'),
+  updateProfile: (data) => api.put('/landing/profile', data),
+  uploadAvatar: (formData) => api.post('/landing/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
+}
+
 export default api

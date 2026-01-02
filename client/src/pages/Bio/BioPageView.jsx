@@ -175,15 +175,19 @@ export default function BioPageView() {
         {/* Avatar */}
         <div className="flex justify-center mb-6">
           {settings.avatarUrl ? (
-            <img
-              src={settings.avatarUrl}
-              alt={page.title}
-              className="w-28 h-28 rounded-full object-cover shadow-xl"
+            <div
+              className="w-28 h-28 rounded-full overflow-hidden shadow-xl ring-4 ring-white/30"
               style={{ boxShadow: `0 10px 40px -10px ${theme.primary}50` }}
-            />
+            >
+              <img
+                src={settings.avatarUrl}
+                alt={page.title}
+                className="w-full h-full object-cover object-top"
+              />
+            </div>
           ) : (
             <div
-              className="w-28 h-28 rounded-full flex items-center justify-center text-white text-4xl font-bold shadow-xl"
+              className="w-28 h-28 rounded-full flex items-center justify-center text-white text-4xl font-bold shadow-xl ring-4 ring-white/30"
               style={{
                 background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})`,
                 boxShadow: `0 10px 40px -10px ${theme.primary}80`,

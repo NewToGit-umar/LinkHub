@@ -87,6 +87,9 @@ app.use('/api/privacy', (await import('./routes/privacy.js')).default);
 // Mount profile routes
 app.use('/api/profile', (await import('./routes/profile.js')).default);
 
+// Mount landing page routes (for admin-editable sample profile)
+app.use('/api/landing', (await import('./routes/landing.js')).default);
+
 // Serve static files for uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
